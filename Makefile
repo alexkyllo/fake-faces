@@ -1,9 +1,19 @@
 include .env
 export
 
-.PHONY: help
+.PHONY: help report
 
 PKG=fake_faces
+
+#################################################################################
+# Project Commands                                                              #
+#################################################################################
+
+## Compile the project report PDF
+report: report.pdf
+
+report.pdf: report.tex
+	pdflatex $<
 
 #################################################################################
 # Self Documenting Commands                                                     #
