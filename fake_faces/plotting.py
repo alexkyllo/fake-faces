@@ -31,13 +31,13 @@ def crop_first_face(path):
     img = cv2.imread(path)
     (x, y, width, height) = detect_face_coords(path)
     crop_img = img[y : y + height, x : x + width]
-    fig = cv2.imshow("cropped", crop_img)
-    return fig
+    return crop_img
 
 
 @click.command()
 @click.argument("input_path", type=click.Path(exists=True))
 @click.argument("output_path", type=click.Path())
 def cropface(input_path, output_path):
-    fig = crop_first_face(path)
-    plt.savefig(output_path)
+    """Detect and crop a face in INPUT_PATH image and save to OUTPUT_PATH."""
+    fig = crop_first_face(input_path)
+    cv2.imwrite(output_path, fig)
