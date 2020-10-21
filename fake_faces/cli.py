@@ -3,7 +3,8 @@
 import os
 import logging
 import click
-from fake_faces.plotting import cropface
+from fake_faces.processing import cropface
+
 
 @click.group()
 def cli():
