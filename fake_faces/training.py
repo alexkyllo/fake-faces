@@ -62,7 +62,7 @@ def make_model():
 
 @click.command()
 @click.argument("input_path", type=click.Path(exists=True))
-@click.argument("output_path", type=click.Path())
+@click.argument("model_path", type=click.Path())
 @click.argument("epochs", type=click.INT)
 def train(input_path, model_path, epochs):
     """Train the CNN model on training data and save it."""
@@ -84,3 +84,5 @@ def train(input_path, model_path, epochs):
     model.fit_generator(train, epochs=epochs, steps_per_epoch=len(train))
     train_end = time.time()
     logger.info("Training completed in %.2f seconds", train_end - train_start)
+    model.save(model_path)
+    logger.info("Trained model saved to %s", model_path)
