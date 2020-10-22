@@ -8,6 +8,8 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 
+SHAPE = (64, 64)
+
 
 def make_generator(train=True):
     """Create an ImageDataGenerator object to read images from the
@@ -32,10 +34,30 @@ def make_generator(train=True):
     )
     return gen
 
+
 def make_model():
-    """Build a Keras sequential model"""
+    """Build a CNN model using Keras Sequential API"""
     model = Sequential()
-    # TODO
+    model.add(Conv2D(32, (3, 3), input_shape=SHAPE, activation="relu", padding="same"))
+    model.add(MaxPool2D(pool_size=(2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(64, (3, 3), activation="relu", padding="same"))
+    model.add(MaxPool2D((2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Conv2D(128, (3, 3), activation="relu", padding="same"))
+    model.add(MaxPool2D((2, 2)))
+    model.add(Dropout(0.2))
+
+    model.add(Flatten())
+
+    model.add(Dense(128, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(1, activation="sigmoid"))
+
+    model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    return model
 
 
 @click.command()
@@ -46,14 +68,17 @@ def train(input_path, model_path, epochs):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
     logger.info(
-        "GPUs available for training: %s", tf.config.experimental.list_physical_devices("GPU")
+        "GPUs available for training: %s",
+        tf.config.experimental.list_physical_devices("GPU"),
     )
     train_gen = make_generator(train=True)
-    train = gen.flow_from_directory(input_path,
-                                    class_mode="binary",
-                                    batch_size=64,
-                                    target_size=(64, 64),
-                                    color_mode="grayscale")
+    train = gen.flow_from_directory(
+        input_path,
+        class_mode="binary",
+        batch_size=64,
+        target_size=SHAPE,
+        color_mode="grayscale",
+    )
     model = make_model()
     train_start = time.time()
     model.fit_generator(train, epochs=epochs, steps_per_epoch=len(train))
