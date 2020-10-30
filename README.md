@@ -14,9 +14,7 @@ For Tensorflow GPU Support, follow the instructions at
 [GPU Support|Tensorflow](https://www.tensorflow.org/install/gpu)
 
 Additionally, as TF complained that `libcublas.so.10` was missing,
-I had to `sudo apt install libcublas10` and add the following to
-
-`~/.bashrc`:
+I had to `sudo apt install libcublas10` and add the following to `~/.bashrc`:
 
 ``` shell
 export PATH=/usr/local/cuda/bin:$PATH

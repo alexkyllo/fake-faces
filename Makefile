@@ -13,7 +13,10 @@ PKG=fake_faces
 report: report.pdf
 
 report.pdf: report.tex
-	pdflatex $<
+	pdflatex -interaction=nonstopmode $<
+	bibtex report.aux
+	pdflatex -interaction=nonstopmode $<
+	pdflatex -interaction=nonstopmode $<
 
 #################################################################################
 # Self Documenting Commands                                                     #
