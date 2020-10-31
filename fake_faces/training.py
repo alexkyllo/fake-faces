@@ -102,7 +102,7 @@ def train(train_path, valid_path, model_path, epochs):
     )
     model = make_model()
     train_start = time.time()
-    model.fit_generator(
+    model.fit(
         train,
         validation_data=(val),
         epochs=epochs,
