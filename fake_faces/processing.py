@@ -1,9 +1,8 @@
 """processing.py"""
-
+import os
 import logging
 import click
 import matplotlib.pyplot as plt
-from matplotlib.patches import Rectangle
 from mtcnn.mtcnn import MTCNN
 import cv2
 
@@ -16,7 +15,7 @@ def detect_face_coords(path):
     if len(faces) < 1:
         return (0, 0, 0, 0)
     # Only interested in one face per image
-    x, y, width, height = face[0]["box"]
+    x, y, width, height = faces[0]["box"]
     return (x, y, width, height)
 
 
@@ -31,14 +30,55 @@ def crop_first_face(path):
     return crop_img
 
 
+def crop_faces(input_path, output_path):
+    """Detect and crop the first face in an image or dir of images and save to output_path."""
+    logger = logging.getLogger(__name__)
+    output_files = []
+    if os.path.isdir(input_path):
+        if os.path.isfile(output_path):
+            raise ValueError(
+                """If input_path is a directory,
+ output_path must also be a directory."""
+            )
+        else:
+            os.makedirs(output_path, exist_ok=True)
+        files = [
+            os.path.join(input_path, f)
+            for f in os.listdir(input_path)
+            if os.path.isfile(os.path.join(input_path, f))
+        ]
+        num_files = len(files)
+        logger.info("Found %s files to process in %s", num_files, input_path)
+    else:
+        files = [input_path]
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+
+    for f in files:
+        fig = crop_first_face(f)
+        if fig is not None:
+            if os.path.isdir(output_path):
+                output_file = os.path.join(output_path, os.path.basename(f))
+            else:
+                output_file = output_path
+            logger.info("Writing cropped face to %s", output_file)
+            cv2.imwrite(output_file, fig)
+            output_files.append(output_file)
+        else:
+            logger.warning(
+                "No human face detected in %s. No output written.", input_path
+            )
+    return output_files
+
+
 @click.command()
 @click.argument("input_path", type=click.Path(exists=True))
 @click.argument("output_path", type=click.Path())
 def cropface(input_path, output_path):
-    """Detect and crop a face in INPUT_PATH image and save to OUTPUT_PATH."""
-    logger = logging.getLogger(__name__)
-    fig = crop_first_face(input_path)
-    if fig:
-        cv2.imwrite(output_path, fig)
-    else:
-        logger.warn("No human face detected in %s. No output written.", input_path)
+    """Detect and crop a face in INPUT_PATH image(s) and save to OUTPUT_PATH."""
+    if os.path.isdir(input_path):
+        if os.path.isfile(output_path):
+            raise click.BadParameter(
+                """If input_path is a directory,
+ output_path must also be a directory."""
+            )
+    crop_faces(input_path, output_path)

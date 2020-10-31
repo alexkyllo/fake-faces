@@ -504,3 +504,4 @@ TSWLatexianTemp*
 # Others
 
 poetry.lock
+tests/output/
