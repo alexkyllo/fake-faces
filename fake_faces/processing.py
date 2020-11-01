@@ -16,7 +16,18 @@ def detect_face_coords(path):
     if len(faces) < 1:
         return (0, 0, 0, 0)
     # Only interested in one face per image
-    x, y, width, height = faces[0]["box"]
+    # Find the face with the largest area
+    face_areas = [face["box"][2] * face["box"][3] for face in faces]
+    biggest_face = faces[face_areas.index(max(face_areas))]
+    x, y, width, height = biggest_face["box"]
+    # x and y can fall outside the image border.
+    # If so, set them to 0
+    if x < 0:
+        width += x
+        x = 0
+    if y < 0:
+        height += y
+        y = 0
     return (x, y, width, height)
 
 
@@ -60,6 +71,7 @@ def crop_faces(input_path, output_path):
         logger.info("Found %s files to process in %s", num_files, input_path)
     else:
         files = [input_path]
+        num_files = len(files)
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     for i, f in enumerate(files):
