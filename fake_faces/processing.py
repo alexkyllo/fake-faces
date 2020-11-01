@@ -36,7 +36,7 @@ def crop_first_face(path):
     img = cv2.imread(path)
     (x, y, width, height) = detect_face_coords(path)
     # handle case of no face detected
-    if x == (0, 0, 0, 0):
+    if (x, y, width, height) == (0, 0, 0, 0):
         return None
     crop_img = img[y : y + height, x : x + width]
     return crop_img
@@ -91,9 +91,7 @@ def crop_faces(input_path, output_path):
             cv2.imwrite(output_file, fig)
             output_files.append(output_file)
         else:
-            logger.warning(
-                "No human face detected in %s. No output written.", input_path
-            )
+            logger.warning("No human face detected in %s. No output written.", f)
     return output_files
 
 
