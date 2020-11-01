@@ -6,11 +6,12 @@ import matplotlib.pyplot as plt
 from mtcnn.mtcnn import MTCNN
 import cv2
 
+mtcnn = MTCNN()
+
 
 def detect_face_coords(path):
     """Detect a face and return its xy coordinates"""
     data = plt.imread(path)
-    mtcnn = MTCNN()
     faces = mtcnn.detect_faces(data)
     if len(faces) < 1:
         return (0, 0, 0, 0)
@@ -30,6 +31,17 @@ def crop_first_face(path):
     return crop_img
 
 
+def list_excess_files(input_path, output_path):
+    """List all files in a dir (non-recursively)"""
+    files = [
+        os.path.join(input_path, f)
+        for f in os.listdir(input_path)
+        if os.path.isfile(os.path.join(input_path, f))
+        and f not in os.listdir(output_path)
+    ]
+    return files
+
+
 def crop_faces(input_path, output_path):
     """Detect and crop the first face in an image or dir of images and save to output_path."""
     logger = logging.getLogger(__name__)
@@ -42,18 +54,21 @@ def crop_faces(input_path, output_path):
             )
         else:
             os.makedirs(output_path, exist_ok=True)
-        files = [
-            os.path.join(input_path, f)
-            for f in os.listdir(input_path)
-            if os.path.isfile(os.path.join(input_path, f))
-        ]
+        # Get all files in input_path but not in output_path
+        files = list_excess_files(input_path, output_path)
         num_files = len(files)
         logger.info("Found %s files to process in %s", num_files, input_path)
     else:
         files = [input_path]
         os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
-    for f in files:
+    for i, f in enumerate(files):
+        logger.info(
+            "Processing image %s of %s, progress %.2f%%",
+            i + 1,
+            num_files,
+            (i + 1) / num_files * 100,
+        )
         fig = crop_first_face(f)
         if fig is not None:
             if os.path.isdir(output_path):
