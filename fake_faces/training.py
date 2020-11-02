@@ -8,7 +8,7 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from tensorflow.keras.callbacks import ModelCheckpoint
 
-SHAPE = (64, 64, 1)
+SHAPE = (128, 128, 1)
 
 
 def make_generator(train=True):
@@ -20,8 +20,8 @@ def make_generator(train=True):
     if train:
         params = {
             **params,
-            "featurewise_center": True,
-            "featurewise_std_normalization": True,
+            # "featurewise_center": True,
+            # "featurewise_std_normalization": True,
             "rotation_range": 30,
             "shear_range": 0.2,
             "zoom_range": 0.2,
@@ -85,7 +85,7 @@ def train(train_path, valid_path, epochs):
     flow_args = dict(
         class_mode="binary",
         batch_size=64,
-        target_size=SHAPE,
+        target_size=SHAPE[0:2],
         color_mode="grayscale",
     )
     train = train_gen.flow_from_directory(train_path, **flow_args)
