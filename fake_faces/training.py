@@ -8,7 +8,7 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from tensorflow.keras.callbacks import ModelCheckpoint
 
-SHAPE = (64, 64)
+SHAPE = (64, 64, 1)
 
 
 def make_generator(train=True):
@@ -73,9 +73,8 @@ def make_model():
 @click.command()
 @click.argument("train_path", type=click.Path(exists=True))
 @click.argument("valid_path", type=click.Path(exists=True))
-@click.argument("model_path", type=click.Path())
 @click.argument("epochs", type=click.INT)
-def train(train_path, valid_path, model_path, epochs):
+def train(train_path, valid_path, epochs):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
     logger.info(
@@ -92,6 +91,7 @@ def train(train_path, valid_path, model_path, epochs):
     train = train_gen.flow_from_directory(train_path, **flow_args)
     val_gen = make_generator(train=False)
     val = val_gen.flow_from_directory(valid_path, **flow_args)
+    model_path = "models/model.{epoch:02d}-{val_loss:.2f}.hdf5"
     checkpoint = ModelCheckpoint(
         filepath=model_path,
         save_weights_only=True,
