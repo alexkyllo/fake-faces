@@ -1,5 +1,6 @@
 """training.py"""
 import time
+import datetime
 import logging
 import click
 import tensorflow as tf
@@ -9,6 +10,7 @@ from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 SHAPE = (128, 128, 1)
+BATCH_SIZE = 128
 
 
 def make_generator(train=True):
@@ -35,7 +37,7 @@ def make_generator(train=True):
     return gen
 
 
-def make_model():
+def make_model(weights_file=None):
     """Build a CNN model using Keras Sequential API"""
     model = Sequential()
     model.add(
@@ -67,24 +69,26 @@ def make_model():
     model.add(Dense(units=1, activation="sigmoid"))
 
     model.compile(optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"])
+    if weights_file:
+        model.load_weights(weights_file)
     return model
 
 
-@click.command()
-@click.argument("train_path", type=click.Path(exists=True))
-@click.argument("valid_path", type=click.Path(exists=True))
-@click.argument("epochs", type=click.INT)
-def train(train_path, valid_path, epochs):
+def check_gpu():
+    logger = logging.getLogger(__name__)
+    gpus = tf.config.experimental.list_physical_devices("GPU")
+    logger.info("GPUs available for training: %s", gpus)
+    return len(gpus) > 0
+
+
+def train_model(train_path, valid_path, epochs, weights_path=None):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
-    logger.info(
-        "GPUs available for training: %s",
-        tf.config.experimental.list_physical_devices("GPU"),
-    )
+    check_gpu()
     train_gen = make_generator(train=True)
     flow_args = dict(
         class_mode="binary",
-        batch_size=64,
+        batch_size=BATCH_SIZE,
         target_size=SHAPE[0:2],
         color_mode="grayscale",
     )
@@ -92,23 +96,38 @@ def train(train_path, valid_path, epochs):
     val_gen = make_generator(train=False)
     val = val_gen.flow_from_directory(valid_path, **flow_args)
     model_path = "models/model.{epoch:02d}-{val_loss:.2f}.hdf5"
+    log_path = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
     checkpoint = ModelCheckpoint(
         filepath=model_path,
         save_weights_only=True,
-        monitor="val_acc",
-        mode="max",
+        monitor="val_accuracy",
         save_best_only=True,
         verbose=1,
     )
-    model = make_model()
+    model = make_model(weights_path)
     train_start = time.time()
     model.fit(
         train,
         validation_data=(val),
         epochs=epochs,
-        steps_per_epoch=len(train),
-        callbacks=[checkpoint],
+        # steps_per_epoch=len(train),
+        # validation_steps=len(test),
+        callbacks=[checkpoint, tensorboard],
     )
     train_end = time.time()
     logger.info("Training completed in %.2f seconds", train_end - train_start)
     logger.info("Checkpointed model saved to %s", model_path)
+    return model
+
+
+@click.command()
+@click.argument("train_path", type=click.Path(exists=True))
+@click.argument("valid_path", type=click.Path(exists=True))
+@click.argument("epochs", type=click.INT)
+@click.option(
+    "--weights", type=click.Path(exists=True), help="Path to a saved weights file"
+)
+def train(train_path, valid_path, epochs, weights):
+    """Train the model on images in TRAIN_PATH and validate on VALID_PATH for # EPOCHS"""
+    train_model(train_path, valid_path, epochs, weights)

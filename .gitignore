@@ -505,3 +505,7 @@ TSWLatexianTemp*
 
 poetry.lock
 tests/output/
+logs/*
+!logs/.gitkeep
+models/*
+!models/.gitkeep
