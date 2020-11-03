@@ -8,6 +8,9 @@ Install [Poetry](https://python-poetry.org/) and then type `poetry install`.
 
 Install `make`: on Ubuntu, `sudo apt install make`
 
+Install a LaTeX distribution, such as `TeXLive` or `MiKTeX`, that includes `pdflatex`
+to compile the PDF report.
+
 ### GPU Support
 
 For Tensorflow GPU Support, follow the instructions at
