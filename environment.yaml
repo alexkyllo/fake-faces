@@ -8,7 +8,9 @@ dependencies:
   - eli5
   - jupyter
   - jupytext
+  - mtcnn
   - numpy
+  - pillow
   - pylint
   - pytest
   - scikit-learn
