@@ -1,0 +1,15 @@
+name: fake-faces
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - black
+  - click
+  - eli5
+  - jupyter
+  - jupytext
+  - numpy
+  - pylint
+  - pytest
+  - scikit-learn
+  - tensorflow-gpu

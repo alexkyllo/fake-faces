@@ -11,6 +11,8 @@ from tensorflow.keras.callbacks import ModelCheckpoint
 
 SHAPE = (128, 128, 1)
 BATCH_SIZE = 128
+CLASS_MODE = "binary"
+COLOR_MODE = "grayscale"
 
 
 def make_generator(train=True):
@@ -87,10 +89,10 @@ def train_model(train_path, valid_path, epochs, weights_path=None):
     check_gpu()
     train_gen = make_generator(train=True)
     flow_args = dict(
-        class_mode="binary",
+        class_mode=CLASS_MODE,
         batch_size=BATCH_SIZE,
         target_size=SHAPE[0:2],
-        color_mode="grayscale",
+        color_mode=COLOR_MODE,
     )
     train = train_gen.flow_from_directory(train_path, **flow_args)
     val_gen = make_generator(train=False)
