@@ -1,6 +1,7 @@
 """training.py"""
 import time
 import datetime
+import re
 import logging
 import click
 import tensorflow as tf
@@ -10,7 +11,7 @@ from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from tensorflow.keras.callbacks import ModelCheckpoint
 
 SHAPE = (128, 128, 1)
-BATCH_SIZE = 128
+BATCH_SIZE = 64
 CLASS_MODE = "binary"
 COLOR_MODE = "grayscale"
 
@@ -41,6 +42,10 @@ def make_generator(train=True):
 
 def make_model(weights_file=None):
     """Build a CNN model using Keras Sequential API"""
+    # TODO: Try adding batch normalization
+    # TODO: Try doubling up the Conv2D layers
+    # TODO: Try training on RGB images instead of grayscale
+    # TODO: Try Inception and ResNet based architectures
     model = Sequential()
     model.add(
         Conv2D(
@@ -108,11 +113,23 @@ def train_model(train_path, valid_path, epochs, weights_path=None):
         verbose=1,
     )
     model = make_model(weights_path)
+
+    if weights_path:
+        initial_epoch = int(re.findall("model.([0-9]+)", weights_path)[0])
+        logger.info(
+            "Already trained for %s epochs, starting from epoch %s",
+            initial_epoch,
+            initial_epoch + 1,
+        )
+    else:
+        initial_epoch = 0
+
     train_start = time.time()
     model.fit(
         train,
         validation_data=(val),
         epochs=epochs,
+        initial_epoch=initial_epoch,
         # steps_per_epoch=len(train),
         # validation_steps=len(test),
         callbacks=[checkpoint, tensorboard],

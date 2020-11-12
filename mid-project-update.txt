@@ -1,0 +1,54 @@
+Mid-Project Update for Fake Face Detection Project
+
+Alex Kyllo, Will Thomas, John Wyman
+
+November 11, 2020
+
+1. Progress so far:
+
+We have applied several pre-processing steps to the real and fake face images
+including resizing, cropping, and converting to grayscale, to reduce the
+dimensionality of the inputs and speed up model training.
+
+We decided to utilize Keras on Tensorflow 2 to build a convolutional neural
+network for the classification task.
+We have trained an initial 3-layer, 3x3 kernel CNN on the test images that
+attained 75% accuracy on the validation set after 5 training epochs.
+We believe we can improve on this
+through further training and hyperparameter tuning, and we are currently
+researching alternative CNN architectures to evaluate, such as the VGGNet
+ architecture.
+
+2. Main challenges so far and how you plan to overcome them
+
+Due to our lack of experience with the Keras / TF framework, CNNs, and deep
+learning in general, most of our time has been taken up by reading documentation and
+tutorials to learn how to set up the model training process, so it has taken
+longer than we expected to get an end-to-end working model. Plenty of learning
+resources are available online, so we think we can overcome this challenge with
+persistence, practice, and patience.
+
+3. Potential hurdles in the second half of the project and any help you may need
+
+The second half of the project will focus on evaluating the model for fairness
+in its performance across gender, age and race groups. We found a separate dataset
+called FairFace, which consists of 100,000 real human face images
+labeled by gender, age and race, but that will only allow us to assess fairness by
+false positive rate. Because we lack a similar
+repository of fake face images with corresponding demographic labels, we cannot
+assess false negative rate fairness, without a creative solution.
+
+Three approaches we are considering to address this challenge are:
+
+- Manually labeling a subset of perhaps a few hundred fake face images by
+age/gender/race to use in fairness evaluation
+- Training an age/gender/race classifier model on the FairFace dataset, using it
+to label the Fake Faces dataset, and then evaluating our fake face classifier
+by its fairness across these predicted classes
+- Utilizing a pretrained StyleGAN model to take the labeled FairFace images
+as input and transform their latent space encodings to generate similar fake
+face images for false-negative rate fairness assessment.
+
+We would appreciate any suggestions regarding other potential approaches to
+this problem or opinions on which of the above techniques is most likely to
+yield the best results.
