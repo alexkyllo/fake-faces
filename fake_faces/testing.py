@@ -12,7 +12,7 @@ import numpy as np
 from sklearn import metrics
 
 
-def make_confusion_matrix(weights_file, test_path):
+def make_confusion_matrix(weights_file, test_path, threshold=0.5):
     """Calculate metrics on test data"""
     model = make_model(weights_file=weights_file)
     test_gen = make_generator(train=False)
@@ -26,7 +26,7 @@ def make_confusion_matrix(weights_file, test_path):
     test = test_gen.flow_from_directory(test_path, **flow_args)
     test_steps_per_epoch = np.math.ceil(test.samples / test.batch_size)
     predictions = model.predict(test, steps=test_steps_per_epoch)
-    predicted_classes = np.argmax(predictions, axis=1)
+    predicted_classes = (predictions > threshold)
     true_classes = test.classes
 
     return metrics.confusion_matrix(true_classes, predicted_classes)
