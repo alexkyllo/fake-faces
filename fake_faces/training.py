@@ -1,4 +1,5 @@
 """training.py"""
+import os
 import time
 import datetime
 import re
@@ -45,7 +46,7 @@ def make_model(weights_file=None):
     # TODO: Try adding batch normalization
     # TODO: Try doubling up the Conv2D layers
     # TODO: Try training on RGB images instead of grayscale
-    # TODO: Try Inception and ResNet based architectures
+    # TODO: Try Inception, Xception, ResNet, EfficientNet based architectures
     model = Sequential()
     model.add(
         Conv2D(
@@ -88,7 +89,7 @@ def check_gpu():
     return len(gpus) > 0
 
 
-def train_model(train_path, valid_path, epochs, weights_path=None):
+def train_model(train_path, valid_path, model_dir, epochs, weights_path=None):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
     check_gpu()
@@ -102,7 +103,7 @@ def train_model(train_path, valid_path, epochs, weights_path=None):
     train = train_gen.flow_from_directory(train_path, **flow_args)
     val_gen = make_generator(train=False)
     val = val_gen.flow_from_directory(valid_path, **flow_args)
-    model_path = "models/model.{epoch:02d}-{val_loss:.2f}.hdf5"
+    model_path = os.path.join(model_dir, "model.{epoch:02d}-{val_loss:.2f}.hdf5")
     log_path = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
     checkpoint = ModelCheckpoint(
@@ -143,10 +144,11 @@ def train_model(train_path, valid_path, epochs, weights_path=None):
 @click.command()
 @click.argument("train_path", type=click.Path(exists=True))
 @click.argument("valid_path", type=click.Path(exists=True))
+@click.argument("model_path", type=click.Path(exists=True))
 @click.argument("epochs", type=click.INT)
 @click.option(
     "--weights", type=click.Path(exists=True), help="Path to a saved weights file"
 )
-def train(train_path, valid_path, epochs, weights):
+def train(train_path, valid_path, model_path, epochs, weights):
     """Train the model on images in TRAIN_PATH and validate on VALID_PATH for # EPOCHS"""
-    train_model(train_path, valid_path, epochs, weights)
+    train_model(train_path, valid_path, model_path, epochs, weights)

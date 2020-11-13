@@ -5,6 +5,10 @@ export
 
 PKG=fake_faces
 
+TRAIN_PATH=$(FAKE_FACES_DIR)/train
+TEST_PATH=$(FAKE_FACES_DIR)/test
+VALID_PATH=$(FAKE_FACES_DIR)/valid
+
 #################################################################################
 # Project Commands                                                              #
 #################################################################################
