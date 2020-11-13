@@ -11,11 +11,9 @@ from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from tensorflow.keras.callbacks import ModelCheckpoint
 
-SHAPE = (128, 128, 1)
+SHAPE = (128, 128)
 BATCH_SIZE = 64
 CLASS_MODE = "binary"
-COLOR_MODE = "grayscale"
-
 
 def make_generator(train=True):
     """Create an ImageDataGenerator object to read images from the
@@ -41,7 +39,7 @@ def make_generator(train=True):
     return gen
 
 
-def make_model(weights_file=None):
+def make_model(color_channels=1, weights_file=None):
     """Build a CNN model using Keras Sequential API"""
     # TODO: Try adding batch normalization
     # TODO: Try doubling up the Conv2D layers
@@ -52,7 +50,7 @@ def make_model(weights_file=None):
         Conv2D(
             filters=32,
             kernel_size=(3, 3),
-            input_shape=SHAPE,
+            input_shape=(*SHAPE, color_channels),
             activation="relu",
             padding="same",
         )
@@ -89,7 +87,7 @@ def check_gpu():
     return len(gpus) > 0
 
 
-def train_model(train_path, valid_path, model_dir, epochs, weights_path=None):
+def train_model(train_path, valid_path, model_dir, epochs, weights_path=None, color_mode="grayscale"):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
     check_gpu()
@@ -97,23 +95,24 @@ def train_model(train_path, valid_path, model_dir, epochs, weights_path=None):
     flow_args = dict(
         class_mode=CLASS_MODE,
         batch_size=BATCH_SIZE,
-        target_size=SHAPE[0:2],
-        color_mode=COLOR_MODE,
+        target_size=SHAPE,
+        color_mode=color_mode,
     )
     train = train_gen.flow_from_directory(train_path, **flow_args)
     val_gen = make_generator(train=False)
     val = val_gen.flow_from_directory(valid_path, **flow_args)
-    model_path = os.path.join(model_dir, "model.{epoch:02d}-{val_loss:.2f}.hdf5")
+    model_path = os.path.join(model_dir, "model.{epoch:02d}-{val_loss:.2f}-{val_accuracy:.2f}.hdf5")
     log_path = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
     checkpoint = ModelCheckpoint(
         filepath=model_path,
-        save_weights_only=True,
+        save_weights_only=False,
         monitor="val_accuracy",
         save_best_only=True,
         verbose=1,
     )
-    model = make_model(weights_path)
+    color_channels = 3 if color_mode == "rgb" else 1
+    model = make_model(color_channels=color_channels, weights_file=weights_path)
 
     if weights_path:
         initial_epoch = int(re.findall("model.([0-9]+)", weights_path)[0])
