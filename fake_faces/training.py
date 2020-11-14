@@ -53,7 +53,7 @@ def train_model(
         raise ValueError(f"model_name must be one of: {list(MODELS.keys())}")
 
     model = MODELS[model_name](
-        "models/{model_name}", "logs/{model_name}", color_channels=colors
+        f"models/{model_name}", f"logs/{model_name}", color_channels=colors
     )
     train_start = time.time()
     model.train(train_path, valid_path, epochs)
