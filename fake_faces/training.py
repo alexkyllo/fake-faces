@@ -66,12 +66,8 @@ def train_model(
 @click.argument("train_path", type=click.Path(exists=True))
 @click.argument("valid_path", type=click.Path(exists=True))
 @click.argument("epochs", type=click.INT)
-@click.option(
-    "--colors",
-    type=click.Choice([1, 3]),
-    default=1,
-    help="# of color channels, 1 for grayscale or 3 for RGB.",
-)
-def train(model_name, train_path, valid_path, epochs, colors):
+@click.option("--rgb/--grayscale", default=False)
+def train(model_name, train_path, valid_path, epochs, rgb):
     """Train MODEL_NAME on images in TRAIN_PATH and validate on VALID_PATH for # EPOCHS"""
+    colors = 3 if rgb else 1
     train_model(model_name, train_path, valid_path, epochs, colors)
