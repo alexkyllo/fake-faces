@@ -43,11 +43,12 @@ class Model:
         self.color_mode = "rgb" if color_channels == 3 else "grayscale"
 
     def latest_checkpoint(self):
+        files = [f for f in os.scandir(self.path)]
+        if len(files) < 1:
+            return None
         return os.path.join(
             os.path.abspath(self.path),
-            max(
-                [f for f in os.scandir(self.path)], key=lambda x: x.stat().st_mtime
-            ).name,
+            max(files, key=lambda x: x.stat().st_mtime).name,
         )
 
     def train(self, train_path, valid_path, epochs):
