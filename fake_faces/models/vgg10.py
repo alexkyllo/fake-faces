@@ -10,7 +10,7 @@ from tensorflow.keras.layers import (
     Dropout,
     BatchNormalization,
 )
-
+from tensorflow.keras.optimizers import SGD
 from fake_faces.models.model import Model
 from fake_faces import SHAPE, BATCH_SIZE, CLASS_MODE
 
@@ -34,18 +34,16 @@ class VGG10(Model):
         model.add(
             Conv2D(filters=32, kernel_size=(3, 3), activation="relu", padding="same")
         )
+        model.add(BatchNormalization())
         model.add(MaxPool2D(pool_size=(2, 2)))
-        model.add(Dropout(rate=0.2))
-
         model.add(
             Conv2D(filters=64, kernel_size=(3, 3), activation="relu", padding="same")
         )
         model.add(
             Conv2D(filters=64, kernel_size=(3, 3), activation="relu", padding="same")
         )
+        model.add(BatchNormalization())
         model.add(MaxPool2D(pool_size=(2, 2)))
-        model.add(Dropout(rate=0.2))
-
         model.add(
             Conv2D(filters=128, kernel_size=(3, 3), activation="relu", padding="same")
         )
@@ -58,18 +56,14 @@ class VGG10(Model):
         model.add(
             Conv2D(filters=128, kernel_size=(3, 3), activation="relu", padding="same")
         )
+        model.add(BatchNormalization())
         model.add(MaxPool2D(pool_size=(2, 2)))
-        model.add(Dropout(rate=0.2))
-
         model.add(Flatten())
-
         model.add(Dense(units=128, activation="relu"))
         model.add(Dropout(rate=0.5))
         model.add(Dense(units=1, activation="sigmoid"))
-
-        model.compile(
-            optimizer="adam", loss="binary_crossentropy", metrics=["accuracy"]
-        )
+        opt = SGD(lr=0.01)
+        model.compile(optimizer=opt, loss="binary_crossentropy", metrics=["accuracy"])
         if self.checkpoint:
             model.load_weights(self.checkpoint)
         self.model = model

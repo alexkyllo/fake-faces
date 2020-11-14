@@ -2,6 +2,7 @@
 Base class to provide a train() method to subclasses.
 """
 import os
+import datetime
 import re
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -63,7 +64,12 @@ class Model:
         )
         train_flow = train_gen.flow_from_directory(train_path, **flow_args)
         valid_flow = valid_gen.flow_from_directory(valid_path, **flow_args)
-        tensorboard = TensorBoard(log_dir=self.log_path, histogram_freq=1)
+        tensorboard = TensorBoard(
+            log_dir=os.path.join(
+                self.log_path, datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+            ),
+            histogram_freq=1,
+        )
         checkpoint = ModelCheckpoint(
             filepath=os.path.join(self.path, CHECKPOINT_FMT),
             save_weights_only=False,
