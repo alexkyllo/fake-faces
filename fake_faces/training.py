@@ -17,10 +17,12 @@ from tensorflow.keras.layers import (
     BatchNormalization,
 )
 from tensorflow.keras.callbacks import ModelCheckpoint
-
-SHAPE = (128, 128)
-BATCH_SIZE = 64
-CLASS_MODE = "binary"
+from fake_faces import (
+    SHAPE,
+    BATCH_SIZE,
+    CLASS_MODE,
+    CHECKPOINT_FMT,
+)
 
 
 def make_generator(train=True):
@@ -41,15 +43,17 @@ def make_generator(train=True):
             "height_shift_range": 0.2,
             "horizontal_flip": True,
         }
-    gen = ImageDataGenerator(**params,)
+    gen = ImageDataGenerator(
+        **params,
+    )
     return gen
 
 
 def make_model(color_channels=1, weights_file=None):
     """Build a baseline CNN model using Keras Sequential API"""
-    # TODO: Try adding batch normalization
-    # TODO: Try doubling up the Conv2D layers
-    # TODO: Try training on RGB images instead of grayscale
+    # DONE: Try adding batch normalization
+    # DONE: Try doubling up the Conv2D layers
+    # DONE: Try training on RGB images instead of grayscale
     # TODO: Try Inception, Xception, ResNet, EfficientNet based architectures
     model = Sequential()
     model.add(
@@ -91,7 +95,7 @@ def make_model_batch_norm(color_channels=1, weights_file=None):
     # TODO: Try adding batch normalization
     # TODO: Try doubling up the Conv2D layers
     # TODO: Try training on RGB images instead of grayscale
-    # TODO: Try Inception, Xception, ResNet, EfficientNet based architectures
+    # TODO: Try Inception, Xception, ResNet, DenseNet, EfficientNet based architectures
     model = Sequential()
     model.add(
         Conv2D(
@@ -202,9 +206,7 @@ def train_model(
     train = train_gen.flow_from_directory(train_path, **flow_args)
     val_gen = make_generator(train=False)
     val = val_gen.flow_from_directory(valid_path, **flow_args)
-    model_path = os.path.join(
-        model_dir, "model.{epoch:02d}-{val_loss:.2f}-{val_accuracy:.2f}.hdf5"
-    )
+    model_path = os.path.join(model_dir, CHECKPOINT_FMT)
     log_path = "logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
     tensorboard = tf.keras.callbacks.TensorBoard(log_dir=log_path, histogram_freq=1)
     checkpoint = ModelCheckpoint(
