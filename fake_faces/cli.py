@@ -5,6 +5,7 @@ import logging
 import click
 from fake_faces.processing import cropface
 from fake_faces.training import train
+from fake_faces.labeling import label
 
 @click.group()
 def cli():
@@ -17,6 +18,7 @@ def main():
     logging.basicConfig(level=logging.INFO, format=log_fmt)
     cli.add_command(cropface)
     cli.add_command(train)
+    cli.add_command(label)
     cli()
 
 
