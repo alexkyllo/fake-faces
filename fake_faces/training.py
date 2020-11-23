@@ -34,6 +34,7 @@ from fake_faces.models import MODELS
 def check_gpu():
     logger = logging.getLogger(__name__)
     gpus = tf.config.experimental.list_physical_devices("GPU")
+    tf.config.experimental.set_memory_growth(gpus[0], True)
     logger.info("GPUs available for training: %s", gpus)
     return len(gpus) > 0
 
@@ -47,7 +48,7 @@ def train_model(
 ):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
-    check_gpu()
+    #check_gpu()
 
     if model_name not in MODELS.keys():
         raise ValueError(f"model_name must be one of: {list(MODELS.keys())}")

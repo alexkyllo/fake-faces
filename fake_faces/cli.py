@@ -3,6 +3,9 @@
 import os
 import logging
 import click
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
 from fake_faces.processing import cropface
 from fake_faces.training import train
 from fake_faces.labeling import label
