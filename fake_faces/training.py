@@ -48,7 +48,6 @@ def train_model(
 ):
     """Train the CNN model on training data and save it."""
     logger = logging.getLogger(__name__)
-    #check_gpu()
 
     if model_name not in MODELS.keys():
         raise ValueError(f"model_name must be one of: {list(MODELS.keys())}")
