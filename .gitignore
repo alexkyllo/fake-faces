@@ -511,3 +511,4 @@ models/*
 !models/.gitkeep
 /history_*.csv
 history_*.csv
+/experiments/

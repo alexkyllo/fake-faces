@@ -30,7 +30,7 @@ from fake_faces import (
 )
 from fake_faces.models import MODELS
 from fake_faces.experiments import EXPERIMENTS
-
+import questionary
 
 def check_gpu():
     logger = logging.getLogger(__name__)
@@ -76,9 +76,8 @@ def train(model_name, train_path, valid_path, epochs, rgb):
     train_model(model_name, train_path, valid_path, epochs, colors)
 
 @click.command()
-@click.argument("exp_name", type=click.Choice(EXPERIMENTS.keys()))
-def experiment(exp_name):
-    """Run an experiment"""
-    exp_names = list(EXPERIMENTS.keys())
-    if exp_name not in exp_names:
-        raise ValueError(f"exp_name must be one of: {exp_names}")
+def exp():
+    """Run the experiment EXP_NAME for # EPOCHS"""
+    exp_name = questionary.raw_select("Which experiment would you like to run?", list(EXPERIMENTS.keys())).ask()
+    epochs = click.prompt('How many epochs would you like to run it for?', type=int)
+    EXPERIMENTS[exp_name].run(epochs)

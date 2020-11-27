@@ -18,7 +18,7 @@ class Experiment:
 
     def __init__(self, name, color_channels=1, shape=SHAPE):
         self.name = name
-        self.slug = slugify(name, max_length=32)
+        self.slug = slugify(name, max_length=64)
         self.path = os.path.join("experiments/", self.slug)
         self.log_path = os.path.join(self.path, "logs/")
         self.checkpoint_path = os.path.join(self.path, "checkpoints/")
@@ -26,25 +26,31 @@ class Experiment:
         self.color_channels = color_channels
         self.shape = shape
         self.callbacks = [self.__tensorboard(), self.__csvlogger(), self.__checkpoint()]
-        self.train_flow = None
-        self.valid_flow = None
+        self.train_path = None
+        self.valid_path = None
+        self.train_gen = None
+        self.valid_gen = None
+        self.flow_kwargs = {}
         self.model = None
         self.model_kwargs = {}
+
+    def __str__(self):
+        return f"Experiment: {self.name} (slug: {self.slug})"
 
     def set_pipeline(
         self, train_path, valid_path, batch_size=BATCH_SIZE, **augment_kwargs
     ):
         """Configure ImageDataGenerator hyperparameters"""
-        train_gen = ImageDataGenerator(rescale=RESCALE, **augment_kwargs)
-        valid_gen = ImageDataGenerator(rescale=RESCALE)
-        flow_kwargs = dict(
+        self.train_path = train_path
+        self.valid_path = valid_path
+        self.train_gen = ImageDataGenerator(rescale=RESCALE, **augment_kwargs)
+        self.valid_gen = ImageDataGenerator(rescale=RESCALE)
+        self.flow_kwargs = dict(
             class_mode=CLASS_MODE,
             batch_size=batch_size,
             target_size=self.shape,
             color_mode=self.color_mode,
         )
-        self.train_flow = train_gen.flow_from_directory(train_path, **flow_kwargs)
-        self.valid_flow = valid_gen.flow_from_directory(valid_path, **flow_kwargs)
         return self
 
     def set_model(self, model_class, **model_kwargs):
@@ -72,7 +78,7 @@ class Experiment:
 
     def __csvlogger(self):
         """Set up the CSV Logger callback."""
-        csvpath = os.path.join(self.path, f"history_{self.name}.csv")
+        csvpath = os.path.join(self.path, f"history_{self.slug}.csv")
         return CSVLogger(csvpath, separator=",", append=True)
 
     def __checkpoint(self):
@@ -90,13 +96,13 @@ class Experiment:
     def latest_checkpoint_file(self):
         """Get the path to the most recent checkpoint file for this experiment."""
         try:
-            files = os.scandir(self.path)
+            files = os.scandir(self.checkpoint_path)
         except FileNotFoundError:
             return None
-        if len(files) < 1:
+        if len(list(files)) < 1:
             return None
         return os.path.join(
-            os.path.abspath(self.path),
+            os.path.abspath(self.checkpoint_path),
             max(files, key=lambda x: x.stat().st_mtime).name,
         )
 
@@ -120,11 +126,13 @@ class Experiment:
         self.model = self.model.build(
             color_channels=self.color_channels, shape=self.shape, **self.model_kwargs
         )
+        train_flow = self.train_gen.flow_from_directory(self.train_path, **self.flow_kwargs)
+        valid_flow = self.valid_gen.flow_from_directory(self.valid_path, **self.flow_kwargs)
         if self.checkpoint:
             self.model.load_weights(self.checkpoint)
         history = self.model.train(
-            self.train_flow,
-            validation_data=(self.valid_flow),
+            train_flow,
+            valid_flow,
             epochs=epochs,
             initial_epoch=self.initial_epoch,
             callbacks=self.callbacks,
