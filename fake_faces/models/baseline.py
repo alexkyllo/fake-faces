@@ -24,6 +24,7 @@ class Baseline(Model):
         dense_dropout_rate=0.5,
         optimizer=Adam(),
     ):
+        """Build the model with the given hyperparameter values."""
         model = Sequential()
         model.add(
             Conv2D(

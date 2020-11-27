@@ -29,8 +29,9 @@ class Experiment:
         self.train_flow = None
         self.valid_flow = None
         self.model = None
+        self.model_kwargs = {}
 
-    def build_pipeline(
+    def set_pipeline(
         self, train_path, valid_path, batch_size=BATCH_SIZE, **augment_kwargs
     ):
         """Configure ImageDataGenerator hyperparameters"""
@@ -46,11 +47,10 @@ class Experiment:
         self.valid_flow = valid_gen.flow_from_directory(valid_path, **flow_kwargs)
         return self
 
-    def build_model(self, model_class, **hyper_kwargs):
+    def set_model(self, model_class, **model_kwargs):
         """Configure model class and hyperparameters."""
-        self.model = model_class().build(
-            color_channels=self.color_channels, shape=self.shape, **hyper_kwargs
-        )
+        self.model = model_class()
+        self.model_kwargs = model_kwargs
         return self
 
     @property
@@ -89,7 +89,10 @@ class Experiment:
     @property
     def latest_checkpoint_file(self):
         """Get the path to the most recent checkpoint file for this experiment."""
-        files = os.scandir(self.path)
+        try:
+            files = os.scandir(self.path)
+        except FileNotFoundError:
+            return None
         if len(files) < 1:
             return None
         return os.path.join(
@@ -114,6 +117,9 @@ class Experiment:
         """Run the model experiment on input data for a given # of epochs."""
         # Fit the model
         self.ensure_paths()
+        self.model = self.model.build(
+            color_channels=self.color_channels, shape=self.shape, **self.model_kwargs
+        )
         if self.checkpoint:
             self.model.load_weights(self.checkpoint)
         history = self.model.train(

@@ -29,6 +29,7 @@ from fake_faces import (
     CHECKPOINT_FMT,
 )
 from fake_faces.models import MODELS
+from fake_faces.experiments import EXPERIMENTS
 
 
 def check_gpu():
@@ -73,3 +74,11 @@ def train(model_name, train_path, valid_path, epochs, rgb):
     """Train MODEL_NAME on images in TRAIN_PATH and validate on VALID_PATH for # EPOCHS"""
     colors = 3 if rgb else 1
     train_model(model_name, train_path, valid_path, epochs, colors)
+
+@click.command()
+@click.argument("exp_name", type=click.Choice(EXPERIMENTS.keys()))
+def experiment(exp_name):
+    """Run an experiment"""
+    exp_names = list(EXPERIMENTS.keys())
+    if exp_name not in exp_names:
+        raise ValueError(f"exp_name must be one of: {exp_names}")
