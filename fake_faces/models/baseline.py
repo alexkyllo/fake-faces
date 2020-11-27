@@ -1,6 +1,5 @@
 """baseline.py
 A baseline CNN with 3 Conv2D layers"""
-import os
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import (
     Conv2D,
@@ -8,27 +7,23 @@ from tensorflow.keras.layers import (
     Flatten,
     Dense,
     Dropout,
-    BatchNormalization,
 )
 from tensorflow.keras.optimizers import Adam
 from fake_faces.models.model import Model
-from fake_faces import SHAPE, BATCH_SIZE, CLASS_MODE
+from fake_faces import SHAPE
 
 
 class Baseline(Model):
-    def __init__(
+    """A simple 3-layer CNN with dropout regularization to use as a baseline model"""
+
+    def build(
         self,
-        path,
-        log_path,
+        shape=SHAPE,
         color_channels=1,
         maxpool_dropout_rate=0.2,
         dense_dropout_rate=0.5,
         optimizer=Adam(),
     ):
-        """constructor"""
-        super().__init__(path, log_path, color_channels)
-
-        os.makedirs(path, exist_ok=True)
         model = Sequential()
         model.add(
             Conv2D(
@@ -63,6 +58,5 @@ class Baseline(Model):
         model.compile(
             optimizer=optimizer, loss="binary_crossentropy", metrics=["accuracy"]
         )
-        if self.checkpoint:
-            model.load_weights(self.checkpoint)
         self.model = model
+        return self
