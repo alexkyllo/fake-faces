@@ -7,7 +7,7 @@ import tensorflow as tf
 gpus = tf.config.experimental.list_physical_devices("GPU")
 tf.config.experimental.set_memory_growth(gpus[0], True)
 from fake_faces.processing import cropface
-from fake_faces.training import train
+from fake_faces.training import train, exp
 from fake_faces.labeling import label
 
 @click.group()
@@ -22,6 +22,7 @@ def main():
     cli.add_command(cropface)
     cli.add_command(train)
     cli.add_command(label)
+    cli.add_command(exp)
     cli()
 
 

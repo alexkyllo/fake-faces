@@ -15,17 +15,14 @@ from fake_faces import SHAPE
 
 
 class VGG16(Model):
-    def __init__(self, path, log_path, color_channels=1, shape=SHAPE):
-        """constructor"""
-        super().__init__(path, log_path, color_channels, shape)
-
-        os.makedirs(path, exist_ok=True)
+    def build(self, shape=SHAPE, color_channels=1, pooling=None, optimizer=Adam()):
+        """Build the model with the given hyperparameters."""
         model = Sequential()
         model.add(
             VGG(
                 weights=None,
                 include_top=False,
-                # pooling="max",
+                pooling=pooling,
                 input_shape=(*SHAPE, color_channels),
             )
         )
@@ -36,8 +33,8 @@ class VGG16(Model):
         model.add(Dense(units=128, activation="relu"))
         model.add(BatchNormalization())
         model.add(Dense(units=1, activation="sigmoid"))
-        opt = Adam()
-        model.compile(optimizer=opt, loss="binary_crossentropy", metrics=["accuracy"])
-        if self.checkpoint:
-            model.load_weights(self.checkpoint)
+        model.compile(
+            optimizer=optimizer, loss="binary_crossentropy", metrics=["accuracy"]
+        )
         self.model = model
+        return self
