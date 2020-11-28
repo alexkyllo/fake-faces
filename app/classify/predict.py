@@ -12,6 +12,9 @@ from PIL import Image  # Used to convert from URL to an image file
 # Code from: https://stackoverflow.com/questions/55821612/whats-the-fastest-way-to-read-images-from-urls
 def load_image(url):
     """Open image bytes from a URL and return as a numpy array."""
+    # if url == "https://thispersondoesnotexist.com/image": url += ".jpg"
+    logging.info("predict.py: Image URL received now: %s", url)
+
     with urllib.request.urlopen(url) as img_url:
         res = img_url.read()
     img = Image.open(BytesIO(res)).resize((128, 128))
