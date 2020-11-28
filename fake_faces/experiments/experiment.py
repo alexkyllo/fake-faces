@@ -5,6 +5,7 @@ import os
 import datetime
 import re
 import logging
+import csv
 from tensorflow.keras.callbacks import TensorBoard, ModelCheckpoint, CSVLogger
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from fake_faces import SHAPE, RESCALE, BATCH_SIZE, CLASS_MODE, CHECKPOINT_FMT, EPOCH_PAT
@@ -20,9 +21,10 @@ class Experiment:
         self.name = name
         self.slug = slugify(name, max_length=64)
         self.path = os.path.join("experiments/", self.slug)
+        self.csv_path = os.path.join(self.path, f"history_{self.slug}.csv")
         self.log_path = os.path.join(self.path, "logs/")
         self.checkpoint_path = os.path.join(self.path, "checkpoints/")
-        self.checkpoint = self.latest_checkpoint_file
+        self.checkpoint = self.latest_checkpoint_file()
         self.color_channels = color_channels
         self.shape = shape
         self.callbacks = [self.__tensorboard(), self.__csvlogger(), self.__checkpoint()]
@@ -78,8 +80,7 @@ class Experiment:
 
     def __csvlogger(self):
         """Set up the CSV Logger callback."""
-        csvpath = os.path.join(self.path, f"history_{self.slug}.csv")
-        return CSVLogger(csvpath, separator=",", append=True)
+        return CSVLogger(self.csv_path, separator=",", append=True)
 
     def __checkpoint(self):
         """Set up the ModelCheckpoint callback"""
@@ -92,14 +93,13 @@ class Experiment:
         )
         return checkpoint
 
-    @property
     def latest_checkpoint_file(self):
         """Get the path to the most recent checkpoint file for this experiment."""
         try:
-            files = os.scandir(self.checkpoint_path)
+            files = list(os.scandir(self.checkpoint_path))
         except FileNotFoundError:
             return None
-        if len(list(files)) < 1:
+        if len(files) < 1:
             return None
         return os.path.join(
             os.path.abspath(self.checkpoint_path),
@@ -109,9 +109,16 @@ class Experiment:
     @property
     def initial_epoch(self):
         """Get the starting epoch # based on where any prior run left off."""
-        if self.checkpoint:
-            return int(re.findall(EPOCH_PAT, self.checkpoint)[0])
-        return 0
+        try:
+            with open(self.csv_path, "r") as f:
+                row_nums = []
+                reader = csv.reader(f)
+                for row in reader:
+                    if row:
+                        row_nums.append(row[0])
+            return int(row_nums[-1]) + 1
+        except Exception:
+            return 0
 
     def ensure_paths(self):
         """Ensure that the model data directories exist before training."""

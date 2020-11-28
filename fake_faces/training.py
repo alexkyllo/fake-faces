@@ -78,6 +78,6 @@ def train(model_name, train_path, valid_path, epochs, rgb):
 @click.command()
 def exp():
     """Run the experiment EXP_NAME for # EPOCHS"""
-    exp_name = questionary.raw_select("Which experiment would you like to run?", list(EXPERIMENTS.keys())).ask()
+    exp_name = questionary.rawselect("Which experiment would you like to run?", list(EXPERIMENTS.keys())).ask()
     epochs = click.prompt('How many epochs would you like to run it for?', type=int)
     EXPERIMENTS[exp_name].run(epochs)

@@ -25,3 +25,7 @@ class Model(ABC):
             callbacks=callbacks,
         )
         return history
+
+    def load_weights(self, weights_file):
+        self.model.load_weights(weights_file)
+        return self
