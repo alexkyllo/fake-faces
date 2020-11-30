@@ -13,5 +13,10 @@ dependencies:
   - pillow
   - pylint
   - pytest
+  - python-dotenv
+  - python-slugify
   - scikit-learn
   - tensorflow-gpu
+  - pip:
+      - azure-functions
+      - questionary
