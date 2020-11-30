@@ -27,6 +27,54 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda-10.2/targets/x86_64
 Alternatively, you can `conda install tensorflow-gpu` along with the other
 dependencies listed in `pyproject.toml`.
 
+Download the fake faces dataset (4 GB zipped) from
+https://www.kaggle.com/xhlulu/140k-real-and-fake-faces, decompress it on a drive
+and create a `.env` file in this directory with the following content, to tell the
+python package where the dataset is located:
+
+``` shell
+FAKE_FACES_DIR=path/to/fakefaces/real_vs_fake
+```
+
+## Running Experiments
+
+An Experiment is a set of trials for a given model, with varying hyperparameters.
+
+To define a new model, add a .py file in [](fake_faces/models/) and write a new class
+that inherits from `fake_faces.models.model.Model` and implements a `build` method
+(see the existing classes in [](fake_faces/models/) for examples). Then add the model
+to the dictionary of models in [](fake_faces/models/__init__.py).
+
+To define a new experiment, add a .py file in `fake_faces/experiments/`,
+create an array of one or more trials, like this example from
+[](fake_faces/experiments/baseline.py):
+
+``` python
+TRIALS = [
+    Experiment("baseline cropped grayscale no", color_channels=1)
+    .set_pipeline(
+        os.path.join(DATA_DIR, "cropped/train/"),
+        os.path.join(DATA_DIR, "cropped/valid/"),
+    )
+    .set_model(
+        Baseline,
+        maxpool_dropout_rate=0.2,
+        dense_dropout_rate=0.5,
+        optimizer=Adam(learning_rate=0.001),
+    ),
+]
+```
+Then add these trials to the experiments dictionary in [](fake_faces/experiments/__init__.py).
+
+Run experiments from the command line with `fake-faces exp`
+(if you've installed fake-faces as a package) or
+`python fake_faces/cli.py exp` (as a script). You will be prompted to select
+the experiment you wish to run from a menu and enter a number of epochs.
+
+Experiment results will be logged to a folder in [](experiments/) including a CSV
+file of epoch training and validation scores for plotting learning curves, saved
+model .hdf5 files for resuming training and inference, and TensorBoard logs.
+
 ## Testing
 
 `pytest`

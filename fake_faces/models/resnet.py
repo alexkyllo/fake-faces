@@ -12,7 +12,7 @@ from fake_faces.models.model import Model
 from fake_faces import SHAPE
 
 
-class DenseNet121(Model):
+class ResNet50(Model):
     """A ResNet50V2 pre-built (but w/o weights) model architecture from keras"""
     def build(self, shape=SHAPE, color_channels=1, pooling=None, optimizer=Adam()):
         """Build the model with the given hyperparameter values."""
