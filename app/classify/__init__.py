@@ -15,4 +15,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         "Access-Control-Allow-Origin": "*"
     }
 
-    return func.HttpResponse(json.dumps(results), headers = headers)
+    logging.info('Result: %s', results)
+
+    resp = {"result": "Unk"}
+    if (results[0] == False):
+        resp["result"] = "Not a fake"
+    else: resp["result"] = "Fake"
+
+    jsond = json.dumps(resp)
+    result = json.loads(jsond)
+    return func.HttpResponse(json.dumps(result), headers = headers)

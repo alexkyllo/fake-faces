@@ -11,11 +11,11 @@
         <div v-if="waiting">
           <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
         </div>
-        <div v-if="results">
-          {{results}}
+        <img :src="url" v-if="url" style="max-width: 100%;" />
+        <div v-if="results" :style="resStyle">
+          <h1>{{results}}</h1>
         </div>
         <br />
-        <img :src="url" v-if="url" style="max-width: 100%;" />
       </form>
     </div>
 </template>
@@ -30,7 +30,8 @@
             return {
                 url: '',
                 results: null,
-                waiting: false
+                waiting: false,
+                resStyle: 'color: black;',
             }
         },
         methods: {
@@ -45,7 +46,8 @@
                     this.results = null;
                     alert("An error has occurred");
                 } else {
-                    this.results = res.body;
+                    res.body["result"] == "Not a fake" ? this.resStyle = 'color: green' : this.resStyle = 'color: red';
+                    this.results = res.body["result"];
                 }
                 }.bind(this));
             }
@@ -128,5 +130,9 @@
 
     table {
       margin-top: 24px;
+    }
+
+    .resultNeg {
+      color: green;
     }
 </style>
