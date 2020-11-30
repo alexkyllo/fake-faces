@@ -20,6 +20,11 @@ to compile the PDF report.
 
 ### GPU Support
 
+If you use the `conda` method, the GPU support should be automatic because
+`tensorflow-gpu` is a dependency.
+
+If you use the `poetry` method, you will need to install CUDA libraries on your system.
+
 For Tensorflow GPU Support, follow the instructions at
 [GPU Support|Tensorflow](https://www.tensorflow.org/install/gpu)
 
@@ -30,9 +35,6 @@ I had to `sudo apt install libcublas10` and add the following to `~/.bashrc`:
 export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda-10.2/targets/x86_64-linux/lib:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
 ```
-
-Alternatively, you can `conda install tensorflow-gpu` along with the other
-dependencies listed in `pyproject.toml`.
 
 Download the fake faces dataset (4 GB zipped) from
 https://www.kaggle.com/xhlulu/140k-real-and-fake-faces, decompress it on a drive
