@@ -4,7 +4,11 @@ Fake Face Detection Project for CSS 581 Machine Learning at UW Bothell.
 
 ## Installing
 
-Install [Poetry](https://python-poetry.org/) and then type `poetry install`.
+Install [Poetry](https://python-poetry.org/) and then type `poetry install` in this
+directory.
+
+OR, install [miniconda3](https://docs.conda.io/en/latest/miniconda.html) and then type
+`conda env create -f environment.yaml` in this directory.
 
 Install `make`: on Ubuntu, `sudo apt install make`
 
