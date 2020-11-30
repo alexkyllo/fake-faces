@@ -1,13 +1,18 @@
 import logging
 import azure.functions as func
 import json
-from .predict import predict_image_from_url
+import tempfile
+from .predict import predict_image_from_url, predict_image_from_file
 
 def main(req: func.HttpRequest) -> func.HttpResponse:
     image_url = req.params.get('img')
-    logging.info('Image URL received: ' + image_url)
-
-    results = predict_image_from_url(image_url)
+    logging.info('Image URL received: %s', image_url)
+    if image_url == None:
+        imgFile = tempfile.TemporaryFile()
+        imgFile.write(req.get_body())
+        results = predict_image_from_file(imgFile)
+    else:
+        results = predict_image_from_url(image_url)
 
     # TODO: Set Access-Control-Allow-Origin header to hosted location of frontend
     headers = {

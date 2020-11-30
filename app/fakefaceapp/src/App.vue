@@ -1,17 +1,20 @@
 <template>
   <div id="app">
-    <InterFace />
+    <InterFaceFile />
+    <InterFaceAPI />
   </div>
 </template>
 
 <script>
 
-import InterFace from './components/InterFace-API.vue'
+import InterFaceFile from './components/InterFace-Upl.vue'
+import InterFaceAPI from './components/InterFace-API.vue'
 
 export default {
   name: 'App',
   components: {
-    InterFace
+    InterFaceAPI,
+    InterFaceFile
   }
 }
 </script>
