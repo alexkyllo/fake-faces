@@ -40,14 +40,14 @@ FAKE_FACES_DIR=path/to/fakefaces/real_vs_fake
 
 An Experiment is a set of trials for a given model, with varying hyperparameters.
 
-To define a new model, add a .py file in [](fake_faces/models/) and write a new class
+To define a new model, add a .py file in [fake_faces/models/](fake_faces/models/) and write a new class
 that inherits from `fake_faces.models.model.Model` and implements a `build` method
-(see the existing classes in [](fake_faces/models/) for examples). Then add the model
-to the dictionary of models in [](fake_faces/models/__init__.py).
+(see the existing classes in [fake_faces/models/](fake_faces/models/) for examples). Then add the model
+to the dictionary of models in [fake_faces/models/__init__.py](fake_faces/models/__init__.py).
 
 To define a new experiment, add a .py file in `fake_faces/experiments/`,
 create an array of one or more trials, like this example from
-[](fake_faces/experiments/baseline.py):
+[fake_faces/experiments/baseline.py](fake_faces/experiments/baseline.py):
 
 ``` python
 TRIALS = [
@@ -71,7 +71,7 @@ Run experiments from the command line with `fake-faces exp`
 `python fake_faces/cli.py exp` (as a script). You will be prompted to select
 the experiment you wish to run from a menu and enter a number of epochs.
 
-Experiment results will be logged to a folder in [](experiments/) including a CSV
+Experiment results will be logged to a folder in [experiments/](experiments/) including a CSV
 file of epoch training and validation scores for plotting learning curves, saved
 model .hdf5 files for resuming training and inference, and TensorBoard logs.
 
