@@ -6,7 +6,7 @@
 \usepackage{multicol}
 \usepackage{cite}
 \setlength{\columnsep}{1cm}
-
+\setcounter{secnumdepth}{-\maxdimen}
 \title{Fake Face Detection}
 
 \author{
@@ -38,7 +38,7 @@
 \end{abstract}
 
 \begin{multicols}{2}
-  \subsection{Introduction}
+  \section{Introduction}
   Generative Adversarial Networks (GANs) have created the ability to
   encode photographic images into a latent space representation and
   automatically generate many images that can appear to be genuine
@@ -63,11 +63,11 @@
   code representation of a face image and then decoding it back into an image,
   leading to a fake face output image that closely resembles the real face input
   image.
-\subsection{Methods}
-\subsection{Results}
-\subsection{Discussion}
+\section{Methods}
+\section{Results}
+\section{Discussion}
 \end{multicols}
 
 \bibliography{report}
-\bibliographystyle{plain}
+\bibliographystyle{unsrt}
 \end{document}
