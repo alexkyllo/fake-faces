@@ -13,11 +13,16 @@ OR, install [miniconda3](https://docs.conda.io/en/latest/miniconda.html) and the
 Then, once the packages are installed, type `conda activate fake-faces` to activate
 the environment.
 
-OR, use the Dockerfile to install the project in a Docker container:
+OR, use the Dockerfile to install the project in a Docker container.
+
+First, install
+[NVIDIA Docker support](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
+
+Then build and run the container:
 
 ``` shell
 sudo docker build --tag fake-faces:latest .
-sudo docker run --gpus all -it fake-faces:latest bash
+sudo docker run --gpus all -v path/to/fakefaces/real_vs_fake:path/to/fakefaces/real_vs_fake -it fake-faces:latest bash
 fake-faces
 ```
 
