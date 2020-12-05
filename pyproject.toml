@@ -5,7 +5,7 @@ description = ""
 authors = ["Alex Kyllo <alex.kyllo@gmail.com>"]
 
 [tool.poetry.dependencies]
-python = ">=3.8,<3.10"
+python = ">=3.6,<3.10"
 click = "^7.1.2"
 tensorflow = "^2.3.1"
 matplotlib = "^3.3.2"
@@ -31,3 +31,8 @@ fake-faces = 'fake_faces.cli:main'
 [build-system]
 requires = ["poetry-core>=1.0.0a5"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.dephell.main.docker]
+container = "fake-faces"
+repo = "tensorflow/tensorflow"
+tag = "latest-gpu-jupyter"

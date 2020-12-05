@@ -13,6 +13,14 @@ OR, install [miniconda3](https://docs.conda.io/en/latest/miniconda.html) and the
 Then, once the packages are installed, type `conda activate fake-faces` to activate
 the environment.
 
+OR, use the Dockerfile to install the project in a Docker container:
+
+``` shell
+sudo docker build --tag fake-faces:latest .
+sudo docker run --gpus all -it fake-faces:latest bash
+fake-faces
+```
+
 Install `make`: on Ubuntu, `sudo apt install make`
 
 Install a LaTeX distribution, such as `TeXLive` or `MiKTeX`, that includes `pdflatex`
