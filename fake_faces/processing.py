@@ -1,10 +1,19 @@
 """processing.py"""
 import os
+import sys
 import logging
+import math
+import time
+import multiprocessing as mp
 import click
 import matplotlib.pyplot as plt
 from mtcnn.mtcnn import MTCNN
 import cv2
+import subprocess
+
+
+sys.path.append("../pixel2style2pixel/")
+from pixel2style2pixel.scripts import align_all_parallel as align
 
 mtcnn = MTCNN()
 
@@ -107,3 +116,69 @@ def cropface(input_path, output_path):
  output_path must also be a directory."""
             )
     crop_faces(input_path, output_path)
+
+
+@click.command()
+@click.argument("input_path", type=click.Path(exists=True))
+@click.argument("output_path", type=click.Path())
+@click.option(
+    "--num_threads",
+    type=click.INT,
+    default=1,
+    help="Number of threads to run in parallel.",
+)
+def align_all(input_path, output_path, num_threads):
+    """Use pixel2style2pixel's method to crop and align face images."""
+    os.makedirs(output_path, exist_ok=True)
+    file_paths = []
+    for root, dirs, files in os.walk(input_path):
+        for file in files:
+            file_path = os.path.join(root, file)
+            fname = os.path.join(output_path, os.path.relpath(file_path, input_path))
+            res_path = "{}.jpg".format(os.path.splitext(fname)[0])
+            if os.path.splitext(file_path)[1] == ".txt" or os.path.exists(res_path):
+                continue
+            file_paths.append((file_path, res_path))
+    file_chunks = list(
+        align.chunks(file_paths, int(math.ceil(len(file_paths) / num_threads)))
+    )
+    print(f"{len(file_paths)} input files found.")
+    if len(file_chunks) > 0:
+        pool = mp.Pool(num_threads)
+        print("Running face cropping on {} paths".format(len(file_paths)))
+        tic = time.time()
+        pool.map(align.extract_on_paths, file_chunks)
+        toc = time.time()
+        print("Finished cropping in {}s".format(toc - tic))
+
+
+@click.command()
+@click.argument("model_path", type=click.Path(exists=True))
+@click.argument("input_path", type=click.Path(exists=True))
+@click.argument("output_path", type=click.Path())
+@click.option(
+    "--num_threads",
+    type=click.INT,
+    default=1,
+    help="Number of threads to run in parallel.",
+)
+def falsify(input_path, output_path):
+    """Generate fake face images from a set of real face images."""
+    script_path = os.path.join(
+        os.path.abspath(__file__), "../pixel2style2pixel/scripts/inference.py"
+    )
+    subprocess.call(
+        [
+            "python",
+            script_path,
+            "--exp_dir",
+            output_path,
+            "--checkpoint_path",
+            model_path,
+            "--data_path",
+            input_path,
+            "--resize_outputs",
+            "--test_workers",
+            num_threads,
+        ]
+    )
