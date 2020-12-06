@@ -15,7 +15,7 @@ setup(
     long_description=readme,
     name='fake-faces',
     version='0.1.0',
-    python_requires='<3.10,>=3.6',
+    python_requires='<3.10,>=3.6.1',
     author='Alex Kyllo',
     author_email='alex.kyllo@gmail.com',
     entry_points={"console_scripts": ["fake-faces = fake_faces.cli:main"]},
@@ -24,11 +24,13 @@ setup(
     package_data={},
     install_requires=[
         'azure-functions==1.*,>=1.5.0', 'click==7.*,>=7.1.2',
-        'eli5==0.*,>=0.10.1', 'matplotlib==3.*,>=3.3.2', 'mtcnn==0.*,>=0.1.0',
-        'numpy==1.*,>=1.18.0', 'pydot==1.*,>=1.4.1',
+        'dlib==19.*,>=19.21.1', 'eli5==0.*,>=0.10.1', 'matplotlib==3.*,>=3.3.2',
+        'mtcnn==0.*,>=0.1.0', 'ninja==1.*,>=1.10.0', 'numpy==1.*,>=1.18.0',
+        'pandas==1.*,>=1.1.4', 'pydot==1.*,>=1.4.1',
         'python-dotenv==0.*,>=0.15.0', 'python-slugify==4.*,>=4.0.1',
         'questionary==1.*,>=1.8.1', 'scikit-learn==0.*,>=0.23.2',
-        'tensorflow==2.*,>=2.3.1'
+        'tensorflow==2.*,>=2.3.1', 'torch==1.6.0', 'torchvision==0.7.0',
+        'tqdm==4.*,>=4.54.1'
     ],
     extras_require={
         "dev": [
