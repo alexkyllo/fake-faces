@@ -11,7 +11,6 @@ from mtcnn.mtcnn import MTCNN
 import cv2
 import subprocess
 
-
 sys.path.append("../pixel2style2pixel/")
 from pixel2style2pixel.scripts import align_all_parallel as align
 
@@ -162,23 +161,28 @@ def align_all(input_path, output_path, num_threads):
     default=1,
     help="Number of threads to run in parallel.",
 )
-def falsify(input_path, output_path):
+def falsify(model_path, input_path, output_path, num_threads):
     """Generate fake face images from a set of real face images."""
     script_path = os.path.join(
-        os.path.abspath(__file__), "../pixel2style2pixel/scripts/inference.py"
+        os.path.abspath(os.path.dirname(__file__)),
+        "../pixel2style2pixel/scripts/inference.py",
     )
+    subprocess_args = [
+        sys.executable,
+        script_path,
+        "--exp_dir",
+        output_path,
+        "--checkpoint_path",
+        model_path,
+        "--data_path",
+        input_path,
+        "--resize_outputs",
+        "--test_workers",
+        str(num_threads),
+    ]
+    print(" ".join(subprocess_args))
+    python_path = ":".join(sys.path)[1:]
+    system_path = os.getenv("PATH")
     subprocess.call(
-        [
-            "python",
-            script_path,
-            "--exp_dir",
-            output_path,
-            "--checkpoint_path",
-            model_path,
-            "--data_path",
-            input_path,
-            "--resize_outputs",
-            "--test_workers",
-            num_threads,
-        ]
+        subprocess_args, env={"PYTHONPATH": python_path, "PATH": system_path}
     )

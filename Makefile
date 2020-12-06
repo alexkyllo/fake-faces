@@ -5,9 +5,9 @@ export
 
 PKG=fake_faces
 
-TRAIN_PATH=$(FAKE_FACES_DIR)/train
-TEST_PATH=$(FAKE_FACES_DIR)/test
-VALID_PATH=$(FAKE_FACES_DIR)/valid
+TRAIN_PATH=$(FAKE_FACES_DIR)/real-vs-fake/train
+TEST_PATH=$(FAKE_FACES_DIR)/real-vs-fake/test
+VALID_PATH=$(FAKE_FACES_DIR)/real-vs-fake/valid
 
 #################################################################################
 # Project Commands                                                              #
@@ -21,6 +21,12 @@ report.pdf: report.tex report.bib
 	bibtex report.aux
 	pdflatex -interaction=nonstopmode $<
 	pdflatex -interaction=nonstopmode $<
+
+## align images
+align:
+	fake-faces align-all $(TRAIN_PATH) $(FAKE_FACES_DIR)/aligned/train/ --num_threads 4
+	fake-faces align-all $(VALID_PATH) $(FAKE_FACES_DIR)/aligned/valid/ --num_threads 4
+	fake-faces align-all $(TEST_PATH) $(FAKE_FACES_DIR)/aligned/test/ --num_threads 4
 
 #################################################################################
 # Self Documenting Commands                                                     #

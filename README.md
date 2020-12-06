@@ -25,8 +25,9 @@ sudo docker build --tag fake-faces:latest .
 sudo docker run --gpus all -v path/to/fakefaces/real_vs_fake:path/to/fakefaces/real_vs_fake -it fake-faces:latest bash
 fake-faces
 ```
+### Build Tools
 
-Install `make` and `cmake`: on Ubuntu, `sudo apt install make cmake -y`
+Install `make`, `cmake` and `ninja`: on Ubuntu, `sudo apt install make cmake ninja-build -y`
 
 Install a LaTeX distribution, such as `TeXLive` or `MiKTeX`, that includes `pdflatex`
 to compile the PDF report.
@@ -141,8 +142,8 @@ to convert the FairFace images to fake versions for scoring.
 The `fake-faces` cli includes a `falsify` command to run this process on a folder, e.g.:
 
 ``` shell
-fake-faces falsify psp_ffhq_encode.pt /path/to/fairface/aligned/train /path/to/fairface/aligned/train/fake
-fake-faces falsify psp_ffhq_encode.pt /path/to/fairface/aligned/val /path/to/fairface/aligned/val/fake
+fake-faces falsify psp_ffhq_encode.pt /path/to/fairface/aligned/train/real /path/to/fairface/aligned/train/fake
+fake-faces falsify psp_ffhq_encode.pt /path/to/fairface/aligned/val/real /path/to/fairface/aligned/val/fake
 ```
 
 ## Testing
