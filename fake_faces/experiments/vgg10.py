@@ -30,4 +30,26 @@ TRIALS = [
         dense_dropout_rate=0.5,
         optimizer=SGD(learning_rate=0.001),
     ),
+    Experiment("vgg10 dlib hflip", color_channels=1)
+    .set_pipeline(
+        os.path.join(DATA_DIR, "aligned/train/"),
+        os.path.join(DATA_DIR, "aligned/valid/"),
+        horizontal_flip=True,
+    )
+    .set_model(
+        VGG10,
+        dense_dropout_rate=0.5,
+        optimizer=Adam(learning_rate=0.001),
+    ),
+    Experiment("vgg10 dlib hflip sgd", color_channels=1)
+    .set_pipeline(
+        os.path.join(DATA_DIR, "aligned/train/"),
+        os.path.join(DATA_DIR, "aligned/valid/"),
+        horizontal_flip=True,
+    )
+    .set_model(
+        VGG10,
+        dense_dropout_rate=0.5,
+        optimizer=SGD(learning_rate=0.001),
+    ),
 ]

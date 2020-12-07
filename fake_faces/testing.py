@@ -65,10 +65,24 @@ def stratify(
     var, model_path, label_path, test_path, threshold=0.5, color_mode="grayscale"
 ):
     """Generate confusion matrix per each level of var.
-    var options supported by FairFace are 'age', 'gender', and 'race'."""
+    var options supported by FairFace are 'age', 'gender', and 'race'.
+    Returns a DataFrame indexed by the grouping var, with 4 columns:
+    tn, fp, fn, tp"""
     df_labels = pd.read_csv(label_path)
     df_labels["basename"] = df_labels.file.apply(os.path.basename)
     y, y_pred, filenames = get_predictions(model_path, test_path, threshold, color_mode)
     basenames = [os.path.basename(f) for f in filenames]
     df_results = pd.DataFrame({"y": y, "y_pred": y_pred, "basename": basenames})
-    # TODO: join the dfs together and calculate confusion matrix
+    df_results = df_results.merge(df_labels, how="left", on=["basename"])
+    df_cm = (
+        df_results.groupby("age")
+        .apply(lambda x: metrics.confusion_matrix(x.y, x.y_pred).ravel())
+        .reset_index()
+    )
+    df_cm["tn"] = df_cm[0].apply(lambda x: x[0])
+    df_cm["fp"] = df_cm[0].apply(lambda x: x[1])
+    df_cm["fn"] = df_cm[0].apply(lambda x: x[2])
+    df_cm["tp"] = df_cm[0].apply(lambda x: x[3])
+    df_cm = df_cm.drop(0, axis=1)
+    df_cm = df_cm.set_index(var)
+    return df_cm
