@@ -78,4 +78,39 @@ TRIALS = [
         normalize_fc=True,
         optimizer=Adam(learning_rate=0.001),
     ),
+    Experiment("baseline dlib grayscale", color_channels=1)
+    .set_pipeline(
+        os.path.join(DATA_DIR, "aligned/train/"),
+        os.path.join(DATA_DIR, "aligned/valid/"),
+    )
+    .set_model(
+        Baseline,
+        maxpool_dropout_rate=0.2,
+        dense_dropout_rate=0.5,
+        optimizer=Adam(learning_rate=0.001),
+    ),
+    Experiment("baseline dlib hflip", color_channels=1)
+    .set_pipeline(
+        os.path.join(DATA_DIR, "aligned/train/"),
+        os.path.join(DATA_DIR, "aligned/valid/"),
+        horizontal_flip=True,
+    )
+    .set_model(
+        Baseline,
+        maxpool_dropout_rate=0.2,
+        dense_dropout_rate=0.5,
+        optimizer=Adam(learning_rate=0.001),
+    ),
+    Experiment("baseline dlib color hflip", color_channels=3)
+    .set_pipeline(
+        os.path.join(DATA_DIR, "aligned/train/"),
+        os.path.join(DATA_DIR, "aligned/valid/"),
+        horizontal_flip=True,
+    )
+    .set_model(
+        Baseline,
+        maxpool_dropout_rate=0.2,
+        dense_dropout_rate=0.5,
+        optimizer=Adam(learning_rate=0.001),
+    ),
 ]

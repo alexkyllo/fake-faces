@@ -5,6 +5,7 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 from sklearn import metrics
 from fake_faces import CLASS_MODE, BATCH_SIZE, SHAPE, RESCALE
 
@@ -23,8 +24,8 @@ def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscal
     test = test_gen.flow_from_directory(test_path, **flow_args)
     test_steps_per_epoch = np.math.ceil(test.samples / test.batch_size)
     predictions = model.predict(test, steps=test_steps_per_epoch)
-    y_pred = predictions > threshold
-    return (test.classes, y_pred.flatten(), test.filenames)
+    y_pred = (predictions > threshold).flatten().astype(int)
+    return (test.classes, y_pred, test.filenames)
 
 
 def make_confusion_matrix(
@@ -36,6 +37,28 @@ def make_confusion_matrix(
         weights_file, test_path, threshold, color_mode
     )
     return metrics.confusion_matrix(y, y_pred)
+
+
+def plot_learning_curves(history_file, loss=False):
+    """Plot the train vs. validation learning curves from a history file."""
+    df = pd.read_csv(history_file)
+    fig, ax = plt.subplots()
+    if loss:
+        y = df.loss
+        y_val = df.val_loss
+        label = "Loss"
+    else:
+        y = df.accuracy
+        y_val = df.val_accuracy
+        label = "Accuracy"
+    ax.plot(df.epoch, y, label=f"Training {label}")
+    ax.plot(df.epoch, y_val, label=f"Validation {label}")
+    ax.set_title("Learning Curve")
+    ax.set_xlabel("Training Epochs")
+    ax.set_ylabel(f"{label} Score")
+    ax.legend(loc="best")
+    fig.tight_layout()
+    return ax
 
 
 def stratify(
