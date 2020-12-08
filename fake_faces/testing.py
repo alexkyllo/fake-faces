@@ -11,6 +11,14 @@ from fake_faces import CLASS_MODE, BATCH_SIZE, SHAPE, RESCALE
 
 
 def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
+    y, y_prob, filenames = get_probabilities(
+        weights_file, test_path, threshold=threshold, color_mode=color_mode
+    )
+    y_pred = (y_prob > threshold).flatten().astype(int)
+    return (y, y_prob, filenames)
+
+
+def get_probabilities(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
     """Get model predictions for a directory of test data."""
     model = load_model(weights_file)
     test_gen = ImageDataGenerator(rescale=RESCALE)
@@ -24,8 +32,8 @@ def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscal
     test = test_gen.flow_from_directory(test_path, **flow_args)
     test_steps_per_epoch = np.math.ceil(test.samples / test.batch_size)
     predictions = model.predict(test, steps=test_steps_per_epoch)
-    y_pred = (predictions > threshold).flatten().astype(int)
-    return (test.classes, y_pred, test.filenames)
+
+    return (test.classes, predictions, test.filenames)
 
 
 def make_confusion_matrix(
