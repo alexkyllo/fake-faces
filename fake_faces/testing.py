@@ -1,6 +1,9 @@
 """testing.py
 """
 import os
+import tensorflow as tf
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
@@ -9,16 +12,19 @@ import matplotlib.pyplot as plt
 from sklearn import metrics
 from fake_faces import CLASS_MODE, BATCH_SIZE, SHAPE, RESCALE
 
+# TODO: write script to output LaTeX table of performance metrics using pd.to_latex()
+# TODO: write script to output LaTeX table of fairness metrics using pd.to_latex()
 
 def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
+    """Get a saved model's predictions on a directory of images, as 1s and 0s"""
     y, y_prob, filenames = get_probabilities(
         weights_file, test_path, threshold=threshold, color_mode=color_mode
     )
-    y_pred = (y_prob > threshold).flatten().astype(int)
+    y_pred = (y_prob > threshold).astype(int)
     return (y, y_prob, filenames)
 
 
-def get_probabilities(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
+def get_probabilities(weights_file, test_path, color_mode="grayscale"):
     """Get model predictions for a directory of test data."""
     model = load_model(weights_file)
     test_gen = ImageDataGenerator(rescale=RESCALE)
@@ -31,7 +37,7 @@ def get_probabilities(weights_file, test_path, threshold=0.5, color_mode="graysc
     )
     test = test_gen.flow_from_directory(test_path, **flow_args)
     test_steps_per_epoch = np.math.ceil(test.samples / test.batch_size)
-    predictions = model.predict(test, steps=test_steps_per_epoch)
+    predictions = model.predict(test, steps=test_steps_per_epoch).flatten()
 
     return (test.classes, predictions, test.filenames)
 

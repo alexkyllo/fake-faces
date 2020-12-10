@@ -1,5 +1,6 @@
-\documentclass[12pt, letterpaper]{article}
-\usepackage{arev}
+\documentclass[11pt, letterpaper]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{utopia}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
@@ -39,6 +40,7 @@
 
 \begin{multicols}{2}
   \section{Introduction}
+
   Generative Adversarial Networks (GANs) have created the ability to
   encode photographic images into a latent space representation and
   automatically generate many images that can appear to be genuine
@@ -47,25 +49,106 @@
   photo-realistic images of people who do not exist.
 
   An issue with the available open datasets of human faces is bias in the
-  demographic composition of the pictured individuals.
+  demographic composition of the pictured individuals. The machine learning
+  community has recently been struggling with the issue of model fairness--it is
+  important that models perform equitably for users and data subjects of different
+  backgrounds, and also very difficult to enumerate and quantify the sources
+  of bias in training data that can contribute to biased model performance.
 
   The FairFace\cite{karkkainen2019fairface} study introduced a new dataset of
-  human face images collected from public datasets with manually verified age,
-  gender and race labels.
+  human face images collected from public datasets with manually verified,
+  crowdsourced age, gender and race labels.
 
   While the FairFace dataset provides real human face images that can be used to
   assess disparities in true negative and false positive rates, a second,
   similarly labeled dataset of fake face images is needed to compute true
   positive and false negative rates for specific age, gender and race groups.
+  To address this gap, we investigated methods for ``falsifying'' a real face
+  image by autoencoding it via the StyleGAN latent space.
   A research team at Tel Aviv University recently developed a novel encoder
   network\cite{richardson2020encoding} that is capable of approximately
-  reconstructing StyleGAN's latent
-  code representation of a face image and then decoding it back into an image,
-  leading to a fake face output image that closely resembles the real face input
-  image.
-\section{Methods}
-\section{Results}
-\section{Discussion}
+  reconstructing StyleGAN's latent code representation of a face image and then
+  decoding it back into an image, leading to a fake face output image that very closely
+  resembles the real face input image, implying that the original demographic labels
+  would remain valid.
+
+  \section{Methods}
+
+  \subsection{Data Preprocessing and Augmentation}
+
+  We tested several methods for preprocessing and augmenting the image data before
+  feeding it into the CNN model.
+
+  \begin{enumerate}
+  \item 3-color (RGB) images vs. grayscale
+  \item Pre-cropping and centering faces using pre-trained face detection models
+  \item Random horizontal flips
+  \end{enumerate}
+
+  For pre-cropping, we utilized two different pre-trained face detection models,
+  MTCNN and DLib. (TODO: citations)
+
+  \subsection{Model Training}
+
+  To solve the binary classification task of distinguishing between real and fake
+  human face images, we trained several variations of deep Convolutional
+  Neural Networks (CNN), varying the number of convolution layers as well as several
+  model hyperparameters and image preprocessing steps.
+
+  Our baseline model was a CNN with three convolution layers using a 3x3 kernel size
+
+  \subsection{Model Serving}
+
+  \subsection{Model Explainability}
+
+  \subsection{Model Evaluation}
+
+  Our primary metric for performance assessment during training and model selection
+  was validation set accuracy, because the balanced classes of the input dataset made
+  accuracy straightforward to interpret. For final model performance on out-of-sample
+  test data, we break down performance with a 2x2 confusion matrix and report F1 score,
+  precision score and recall score in addition to accuracy score.
+
+  For fairness metrics, we compare false positive rate and false negative rate ratios
+  for the following binary group definitions taken from the FairFace labels:
+
+  \begin{enumerate}
+  \item Gender = ``male'' compared to Gender = ``female''
+  \item Race = ``white'' compared to all other races
+  \item Age = ``0-2'' compared to all other ages
+  \item Age = ``3-9'' compared to all other ages
+  \item Age = ``more than 70'' compared to all other ages
+  \end{enumerate}
+
+  We examine the model fairness for children and senior citizens as a recent
+  study \cite{9156262} found that the popular face recognition model Face++
+  disproportionately fails to recognize children's faces in images collected from
+  social media.
+
+  \section{Results}
+
+  \subsection{Preprocessing}
+
+  Preprocessing the images using a pre-trained model
+
+  \subsection{Model Performance}
+
+  TODO: model performance metrics go here
+
+  \subsection{Fairness Assessment}
+
+  Our initial model trained on the 70k real and fake faces dataset failed to
+  generalize to the FairFace dataset.
+
+  TODO: model performance metrics for model trained on fakeface only here
+
+  TODO: model performance metrics for model trained on combined dataset here
+
+  TODO: model fairness metrics go here
+
+  \section{Discussion}
+
+  \subsection{Future Work}
 \end{multicols}
 
 \bibliography{report}
