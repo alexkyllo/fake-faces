@@ -97,7 +97,7 @@
   Neural Networks (CNN), varying the number of convolution layers as well as several
   model hyperparameters and image preprocessing steps.
 
-  Our baseline model was a CNN with three convolution layers using a 3x3 kernel size
+  Our intial baseline model was a CNN with three convolution layers using a 3x3 element kernel.
 
   \subsection{Model Serving}
 
@@ -172,8 +172,23 @@
   TODO: model fairness metrics go here
 
   \section{Discussion}
-
+	Our initial goal of detecting fake faces was quite successful, especially on the original dataset. The <Insert finalized model name> managed an accuarcy of <x> percent when testing with the initial dataset. After some thorough testing and investigation, we made the decision to incorporate other fake images, and to go as far as making it more fair. 
+	
+	After a successfully testing our network against same set testing images, we thought that our model was doing quite well so we moved onto external datasets. Upon testing with other fake images, we noted that the accuracy took a dramatic turn in the opposite direction. While investigating, we determined that there could be several causes for this decrease:
+	
+	\begin{enumerate}
+  		\item The original training set had a specific pattern the our models were detecting, causing our network to look for those specific details. It could be something minute, such as the eyes having x and y coordinates that were within a specific range. Although, we deteremined that this was unlikely due to our randomness when pre-processing (add noise, flips, shears, rotations) our data. 
+  		\item Our method for creating a fair face dataset was flawed <talk about how we got this dataset>
+  		\item We didn't have enough data in original dataset to allow for a higher classification rate outside of that set. 
+	\end{enumerate}
+	
   \subsection{Future Work}
+  Overall, we are quite happy with the way our model classifies, but there are several adjustments we'd love to make that could help increase accuracy. We do not believe that there were any fundamental flaws in our methods, rather an inadequate amount of time, resources, and overall data. All of issues revolve around a lack of time, and given more, we could increase the performance of our model architecture and classification. 
+  
+  Time was our largest blocker throughout the entirety of our project, whether it was the time required to set up CUDA, train, or research new theories. During our models training time, we never saw a hint at over fitting, which indicated that there was still performance to be had. Given more time and compute power, we could have increased our accuracy. In addition, we could also take some images from NVIDA's fake face dataset and add that to our training data, but once again the cost involved is more than our team could handle. 
+  
+  In the future, we would love to incorporate these changes and throw more compute power at the problem. Using ample amounts of training data and more computer vision techniques we believe that there is still room to improve on our model. Although, as fake faces become better in better, we wonder how our model would fair. Looking at a company like NVIDA, who has the resources to make fake faces using GANNs and enormous amounts of compute power, will it be possible to detect their fake faces? 
+  
 \end{multicols}
 
 \bibliography{report}
