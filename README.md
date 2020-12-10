@@ -34,6 +34,8 @@ to compile the PDF report.
 
 ### GPU Support
 
+If you use the Docker method, the GPU support is provided the NVIDIA Docker support software (link above).
+
 If you use the `conda` method, the GPU support should be automatic because
 `tensorflow-gpu` is a dependency.
 
@@ -50,19 +52,25 @@ export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda-10.2/targets/x86_64-linux/lib:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
 ```
 
-Download the fake faces dataset (4 GB zipped) from
-https://www.kaggle.com/xhlulu/140k-real-and-fake-faces, decompress it on a drive
-and create a `.env` file in this directory with the following content, to tell the
+Download the fake faces dataset (4 GB zipped) from:
+https://www.kaggle.com/xhlulu/140k-real-and-fake-faces
+
+Download the FairFace dataset [Padding=1.25] version (2 GB zipped)
+from: https://github.com/joojs/fairface
+
+Unzip these datasets onto a drive and create a `.env` file in this
+directory with the following content, to tell the
 python package where the dataset is located:
 
 ``` shell
 FAKE_FACES_DIR=path/to/fakefaces/real_vs_fake
+FAIR_FACES_DIR=path/to/fairface-img-margin125-trainval
 ```
 
 ## Cropping input images
 
-We have generally seen better results on pre-cropped face images. To detect and crop
-faces in a directory of images, use:
+We have generally seen better results on pre-cropped face images.
+To detect and crop faces in a directory of images with the MTCNN model, use:
 
 ``` shell
 fake-faces cropface INPUT_PATH OUTPUT_PATH
@@ -71,6 +79,12 @@ fake-faces cropface INPUT_PATH OUTPUT_PATH
 A pre-trained MTCNN model will be used to detect the largest face in each image, crop to it,
 and output the cropped image in OUTPUT_PATH with the same filename. If no face is detected,
 the file will be skipped.
+
+To use the dlib model for cropping faces (required for input to pixel2style2pixel), use:
+
+``` shell
+fake-faces align-all INPUT_PATH OUTPUT_PATH
+```
 
 ## Running Experiments
 
@@ -87,7 +101,7 @@ create an array of one or more trials, like this example from
 
 ``` python
 TRIALS = [
-    Experiment("baseline cropped grayscale no", color_channels=1)
+    Experiment("baseline cropped grayscale", color_channels=1)
     .set_pipeline(
         os.path.join(DATA_DIR, "cropped/train/"),
         os.path.join(DATA_DIR, "cropped/valid/"),

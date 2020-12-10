@@ -6,6 +6,8 @@
 \usepackage{amsmath}
 \usepackage{multicol}
 \usepackage{cite}
+\usepackage{graphicx}
+\usepackage{wrapfig}
 \setlength{\columnsep}{1cm}
 \setcounter{secnumdepth}{-\maxdimen}
 \title{Fake Face Detection}
@@ -99,7 +101,11 @@
 
   \subsection{Model Serving}
 
+  TODO: Details and screenshots of web application here
+
   \subsection{Model Explainability}
+
+  TODO: Explanation and screenshot of eli5 highlighted image, possibly CNN activation map
 
   \subsection{Model Evaluation}
 
@@ -115,6 +121,7 @@
   \begin{enumerate}
   \item Gender = ``male'' compared to Gender = ``female''
   \item Race = ``white'' compared to all other races
+  \item Race = ``black'' compared to all other races
   \item Age = ``0-2'' compared to all other ages
   \item Age = ``3-9'' compared to all other ages
   \item Age = ``more than 70'' compared to all other ages
@@ -129,7 +136,25 @@
 
   \subsection{Preprocessing}
 
-  Preprocessing the images using a pre-trained model
+  We utilized two pre-trained face recognition models to locate the human face
+  in the image, align it so that the eyes, nose and mouth are level and centered,
+  and crop to a margin around the face. Because these preprocessing models are
+  themselves probabilistic machine learning models, they sometimes fail to recognize
+  a human face at all (false negative) or incorrectly recognize some other object
+  as a human face (false positive). We examined the images for which face detection
+  failed,
+
+  TODO: examples of false negative and false positive images
+
+  False positives:
+
+  \begin{wrapfigure}{r}{0.25\textwidth} %this figure will be at the right
+    \centering
+    \includegraphics[width=0.25\textwidth]{figures/crop-failures/dlib/false-positives/fairface/61.jpg}
+    \label{falsepos1}
+  \end{wrapfigure}
+
+  TODO: side-by-sides of before/afters from pixel2style2pixel
 
   \subsection{Model Performance}
 
