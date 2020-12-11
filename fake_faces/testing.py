@@ -1,4 +1,5 @@
 """testing.py
+Functions for testing the model and reporting metrics
 """
 import os
 import tensorflow as tf
@@ -23,7 +24,6 @@ def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscal
     y_pred = (y_prob > threshold).astype(int)
     return (y, y_prob, filenames)
 
-
 def get_probabilities(weights_file, test_path, color_mode="grayscale"):
     """Get model predictions for a directory of test data."""
     model = load_model(weights_file)
@@ -40,7 +40,6 @@ def get_probabilities(weights_file, test_path, color_mode="grayscale"):
     predictions = model.predict(test, steps=test_steps_per_epoch).flatten()
 
     return (test.classes, predictions, test.filenames)
-
 
 def make_confusion_matrix(
     weights_file, test_path, threshold=0.5, color_mode="grayscale"

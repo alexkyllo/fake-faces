@@ -1,10 +1,13 @@
 \documentclass[11pt, letterpaper]{article}
 \usepackage[margin=2cm]{geometry}
-\usepackage{utopia}
+\usepackage{fourier}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
-\usepackage{multicol}
+\usepackage{multicol, caption}
+\newenvironment{Figure}
+  {\par\medskip\noindent\minipage{\linewidth}}
+  {\endminipage\par\medskip}
 \usepackage{cite}
 \usepackage{graphicx}
 \usepackage{wrapfig}
@@ -25,19 +28,19 @@
 \maketitle
 
 \begin{abstract}
-  In this study we investigate the question of whether it is still feasible to
-  automatically discern AI-generated human face images from genuine photographic
-  ones, by training a convolutional neural network on a labeled dataset of
-  70,000 real and 70,000 fake face images.
-  We use the fake face recognition problem to further explore the topic of
-  model fairness, by evaluating the model's performance across age, gender
-  and race groups on a demographically labeled face dataset. To achieve this, we
-  propose a method of utilizing an encoder network to translate demographically
-  labeled real face images into an approximation of their latent space
-  representation and then reconstruct them, creating a dataset of matching fake
-  face images with the same demographic labels. This allows us to assess whether
-  our fake face detection model and the generative model that generated its
-  input images, were trained on a demographically biased dataset.
+  In this study we investigate whether it is still feasible to automatically
+  discern AI-generated human face images from genuine photographic ones, by
+  training a convolutional neural network on a labeled dataset of 70,000 real
+  and 70,000 fake face images. We use the fake face classification problem to
+  further explore the topic of model fairness, by evaluating the model's
+  performance across age, gender and race groups on a demographically labeled
+  face dataset. To achieve this, we propose a method of utilizing an encoder
+  network to translate demographically labeled real face images into an
+  approximation of their latent space representation and then reconstruct them,
+  creating a dataset of matching fake face images with the same demographic
+  labels. This allows us to assess whether our fake face detection model works
+  equally well for human faces of different age, gender and race groups, or
+  whether it even generalizes to a dataset that is demographically balanced.
 \end{abstract}
 
 \begin{multicols}{2}
@@ -53,33 +56,39 @@
   An issue with the available open datasets of human faces is bias in the
   demographic composition of the pictured individuals. The machine learning
   community has recently been struggling with the issue of model fairness--it is
-  important that models perform equitably for users and data subjects of different
-  backgrounds, and also very difficult to enumerate and quantify the sources
-  of bias in training data that can contribute to biased model performance.
+  important that models perform equitably for users and data subjects of 
+  different backgrounds, and also very difficult to enumerate and quantify the 
+  sources of bias in training data that can contribute to biased model
+  performance.
 
   The FairFace\cite{karkkainen2019fairface} study introduced a new dataset of
   human face images collected from public datasets with manually verified,
-  crowdsourced age, gender and race labels.
+  crowdsourced age, gender and race labels. The FairFace paper demonstrates that
+  because existing public datasets of human faces contain a majority of white
+  faces, models trained on them fail to generalize well to datasets where more
+  non-white faces are present. We suspected that this might also be the case for
+  the 70k real and fake faces dataset that we utilized for model training, and
+  sought to test this by evaluating it on a demographically labeled dataset.
 
   While the FairFace dataset provides real human face images that can be used to
-  assess disparities in true negative and false positive rates, a second,
-  similarly labeled dataset of fake face images is needed to compute true
-  positive and false negative rates for specific age, gender and race groups.
-  To address this gap, we investigated methods for ``falsifying'' a real face
-  image by autoencoding it via the StyleGAN latent space.
-  A research team at Tel Aviv University recently developed a novel encoder
+  assess disparities in a fake face detector's true negative and false positive
+  rates, a second, similarly labeled dataset of fake face images is needed to
+  compute true positive and false negative rates for specific age, gender and
+  race groups. To address this gap, we investigated methods for ``falsifying'' a
+  real face image by autoencoding it via the StyleGAN latent space. A research
+  team at Tel Aviv University recently developed a novel encoder
   network\cite{richardson2020encoding} that is capable of approximately
   reconstructing StyleGAN's latent code representation of a face image and then
-  decoding it back into an image, leading to a fake face output image that very closely
-  resembles the real face input image, implying that the original demographic labels
-  would remain valid.
+  decoding it back into an image, leading to a fake face output image that very
+  closely resembles the real face input image, implying that the original
+  demographic labels would remain valid.
 
   \section{Methods}
 
   \subsection{Data Preprocessing and Augmentation}
 
-  We tested several methods for preprocessing and augmenting the image data before
-  feeding it into the CNN model.
+  We tested several methods for preprocessing and augmenting the image data
+  before feeding it into the CNN model.
 
   \begin{enumerate}
   \item 3-color (RGB) images vs. grayscale
@@ -88,16 +97,17 @@
   \end{enumerate}
 
   For pre-cropping, we utilized two different pre-trained face detection models,
-  MTCNN and DLib. (TODO: citations)
+  MTCNN and Dlib. (TODO: citations)
 
   \subsection{Model Training}
 
-  To solve the binary classification task of distinguishing between real and fake
-  human face images, we trained several variations of deep Convolutional
-  Neural Networks (CNN), varying the number of convolution layers as well as several
-  model hyperparameters and image preprocessing steps.
+  To solve the binary classification task of distinguishing between real and
+  fake human face images, we trained several variations of deep Convolutional
+  Neural Networks (CNN), varying the number of convolution layers as well as
+  several model hyperparameters and image preprocessing steps.
 
-  Our intial baseline model was a CNN with three convolution layers using a 3x3 element kernel.
+  Our intial baseline model was a CNN with three convolution layers using a 3x3
+  element kernel.
 
   \subsection{Model Serving}
 
@@ -105,18 +115,21 @@
 
   \subsection{Model Explainability}
 
-  TODO: Explanation and screenshot of eli5 highlighted image, possibly CNN activation map
+  TODO: Explanation and screenshot of eli5 highlighted image, possibly CNN
+  activation map
 
   \subsection{Model Evaluation}
 
-  Our primary metric for performance assessment during training and model selection
-  was validation set accuracy, because the balanced classes of the input dataset made
-  accuracy straightforward to interpret. For final model performance on out-of-sample
-  test data, we break down performance with a 2x2 confusion matrix and report F1 score,
-  precision score and recall score in addition to accuracy score.
+  Our primary metric for performance assessment during training and model
+  selection was validation set accuracy, because the balanced classes of the
+  input dataset made accuracy straightforward to interpret. For final model
+  performance on out-of-sample test data, we break down performance with a 2x2
+  confusion matrix and report F1 score, precision score and recall score in
+  addition to accuracy score.
 
-  For fairness metrics, we compare false positive rate and false negative rate ratios
-  for the following binary group definitions taken from the FairFace labels:
+  For fairness metrics, we compare false positive rate and false negative rate
+  ratios for the following binary group definitions taken from the FairFace
+  labels:
 
   \begin{enumerate}
   \item Gender = ``male'' compared to Gender = ``female''
@@ -129,32 +142,49 @@
 
   We examine the model fairness for children and senior citizens as a recent
   study \cite{9156262} found that the popular face recognition model Face++
-  disproportionately fails to recognize children's faces in images collected from
-  social media.
+  disproportionately fails to recognize children's faces in images collected
+  from social media.
 
   \section{Results}
 
   \subsection{Preprocessing}
 
   We utilized two pre-trained face recognition models to locate the human face
-  in the image, align it so that the eyes, nose and mouth are level and centered,
-  and crop to a margin around the face. Because these preprocessing models are
-  themselves probabilistic machine learning models, they sometimes fail to recognize
-  a human face at all (false negative) or incorrectly recognize some other object
-  as a human face (false positive). We examined the images for which face detection
-  failed,
+  in the image, align it so that the eyes, nose and mouth are level and
+  centered, and crop to a margin around the face. Because these preprocessing
+  models are themselves probabilistic machine learning models, they sometimes
+  fail to recognize a human face at all (false negative) or incorrectly
+  recognize some other object as a human face (false positive). We examined the
+  images for which face detection failed.
 
-  TODO: examples of false negative and false positive images
+  The Dlib frontal face detector method mistook several objects including a logo
+  and a necklace for human faces (Figure \ref{falsepos}), while the MTCNN face
+  detector method failed to identify several faces with brightly colored hair or
+  wigs and heavy makeup as faces (Figure \ref{falseneg})
 
-  False positives:
-
-  \begin{wrapfigure}{r}{0.25\textwidth} %this figure will be at the right
+  \begin{Figure}
     \centering
-    \includegraphics[width=0.25\textwidth]{figures/crop-failures/dlib/false-positives/fairface/61.jpg}
-    \label{falsepos1}
-  \end{wrapfigure}
+    \includegraphics[width=0.7\textwidth]{figures/false-positives.jpg}
+    \captionof{figure}{Sample of false negatives cropped by Dlib.}
+    \label{falsepos}
+  \end{Figure}
 
-  TODO: side-by-sides of before/afters from pixel2style2pixel
+  False negatives:
+
+  \begin{Figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/false-negatives.jpg}
+    \captionof{figure}{Sample of false positives that MTCNN failed to crop.}
+    \label{falseneg}
+  \end{Figure}
+
+
+  \begin{Figure}
+    \centering
+    \includegraphics[width=0.7\textwidth]{figures/fair2fake.jpg}
+    \captionof{figure}{Sample of FairFace images encoded by pixel2style2pixel}
+    \label{fair2fake}
+  \end{Figure}
 
   \subsection{Model Performance}
 
@@ -172,22 +202,55 @@
   TODO: model fairness metrics go here
 
   \section{Discussion}
-	Our initial goal of detecting fake faces was quite successful, especially on the original dataset. The <Insert finalized model name> managed an accuarcy of <x> percent when testing with the initial dataset. After some thorough testing and investigation, we made the decision to incorporate other fake images, and to go as far as making it more fair. 
+  Our initial goal of detecting fake faces was quite successful, especially on
+  the original dataset. The <Insert finalized model name> managed an accuarcy of
+  <x> percent when testing with the initial dataset. After some thorough testing
+  and investigation, we made the decision to incorporate other fake images, and
+  to go as far as making it more fair. 
 	
-	After a successfully testing our network against same set testing images, we thought that our model was doing quite well so we moved onto external datasets. Upon testing with other fake images, we noted that the accuracy took a dramatic turn in the opposite direction. While investigating, we determined that there could be several causes for this decrease:
+  After a successfully testing our network against same set testing images, we
+  thought that our model was doing quite well so we moved onto external
+  datasets. Upon testing with other fake images, we noted that the accuracy took
+  a dramatic turn in the opposite direction. While investigating, we determined
+  that there could be several causes for this decrease:
 	
 	\begin{enumerate}
-  		\item The original training set had a specific pattern the our models were detecting, causing our network to look for those specific details. It could be something minute, such as the eyes having x and y coordinates that were within a specific range. Although, we deteremined that this was unlikely due to our randomness when pre-processing (add noise, flips, shears, rotations) our data. 
-  		\item Our method for creating a fair face dataset was flawed <talk about how we got this dataset>
-  		\item We didn't have enough data in original dataset to allow for a higher classification rate outside of that set. 
+  		\item The original training set had a specific pattern the our models were
+  		detecting, causing our network to look for those specific details. It
+  		could be something minute, such as the eyes having x and y coordinates
+  		that were within a specific range. Although, we deteremined that this was
+  		unlikely due to our randomness when pre-processing (add noise, flips,
+  		shears, rotations) our data. 
+  		\item Our method for creating a fair face dataset was flawed <talk about
+  		how we got this dataset>
+  		\item We didn't have enough data in original dataset to allow for a higher
+  		classification rate outside of that set. 
 	\end{enumerate}
 	
   \subsection{Future Work}
-  Overall, we are quite happy with the way our model classifies, but there are several adjustments we'd love to make that could help increase accuracy. We do not believe that there were any fundamental flaws in our methods, rather an inadequate amount of time, resources, and overall data. All of issues revolve around a lack of time, and given more, we could increase the performance of our model architecture and classification. 
+  Overall, we are quite happy with the way our model classifies, but there are
+  several adjustments we'd love to make that could help increase accuracy. We do
+  not believe that there were any fundamental flaws in our methods, rather an
+  inadequate amount of time, resources, and overall data. All of issues revolve
+  around a lack of time, and given more, we could increase the performance of
+  our model architecture and classification. 
   
-  Time was our largest blocker throughout the entirety of our project, whether it was the time required to set up CUDA, train, or research new theories. During our models training time, we never saw a hint at over fitting, which indicated that there was still performance to be had. Given more time and compute power, we could have increased our accuracy. In addition, we could also take some images from NVIDA's fake face dataset and add that to our training data, but once again the cost involved is more than our team could handle. 
+  Time was our largest blocker throughout the entirety of our project, whether
+  it was the time required to set up CUDA, train, or research new theories.
+  During our models training time, we never saw a hint at over fitting, which
+  indicated that there was still performance to be had. Given more time and
+  compute power, we could have increased our accuracy. In addition, we could
+  also take some images from NVIDA's fake face dataset and add that to our
+  training data, but once again the cost involved is more than our team could
+  handle. 
   
-  In the future, we would love to incorporate these changes and throw more compute power at the problem. Using ample amounts of training data and more computer vision techniques we believe that there is still room to improve on our model. Although, as fake faces become better in better, we wonder how our model would fair. Looking at a company like NVIDA, who has the resources to make fake faces using GANNs and enormous amounts of compute power, will it be possible to detect their fake faces? 
+  In the future, we would love to incorporate these changes and throw more
+  compute power at the problem. Using ample amounts of training data and more
+  computer vision techniques we believe that there is still room to improve on
+  our model. Although, as fake faces become better in better, we wonder how our
+  model would fair. Looking at a company like NVIDA, who has the resources to
+  make fake faces using GANNs and enormous amounts of compute power, will it be
+  possible to detect their fake faces? 
   
 \end{multicols}
 
