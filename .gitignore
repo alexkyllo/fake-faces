@@ -512,3 +512,4 @@ models/*
 /history_*.csv
 history_*.csv
 /experiments/
+.vscode/settings.json
