@@ -3,6 +3,7 @@ Functions for testing the model and reporting metrics
 """
 import os
 import tensorflow as tf
+
 gpus = tf.config.experimental.list_physical_devices("GPU")
 tf.config.experimental.set_memory_growth(gpus[0], True)
 from tensorflow.keras.models import load_model
@@ -11,18 +12,20 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import metrics
+import click
 from fake_faces import CLASS_MODE, BATCH_SIZE, SHAPE, RESCALE
 
-# TODO: write script to output LaTeX table of performance metrics using pd.to_latex()
 # TODO: write script to output LaTeX table of fairness metrics using pd.to_latex()
+
 
 def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
     """Get a saved model's predictions on a directory of images, as 1s and 0s"""
     y, y_prob, filenames = get_probabilities(
-        weights_file, test_path, threshold=threshold, color_mode=color_mode
+        weights_file, test_path, color_mode=color_mode
     )
     y_pred = (y_prob > threshold).astype(int)
-    return (y, y_prob, filenames)
+    return (y, y_pred, filenames)
+
 
 def get_probabilities(weights_file, test_path, color_mode="grayscale"):
     """Get model predictions for a directory of test data."""
@@ -40,6 +43,34 @@ def get_probabilities(weights_file, test_path, color_mode="grayscale"):
     predictions = model.predict(test, steps=test_steps_per_epoch).flatten()
 
     return (test.classes, predictions, test.filenames)
+
+
+def make_metrics_latex(weights_file, test_path, label, threshold=0.5, color_mode="grayscale"):
+    """Generate model metrics and output them to a LaTeX table."""
+    y, y_pred, filenames = get_predictions(weights_file, test_path, threshold, color_mode)
+    f1 = metrics.f1_score(y, y_pred)
+    accuracy = metrics.accuracy_score(y, y_pred)
+    precision = metrics.precision_score(y, y_pred)
+    recall = metrics.recall_score(y, y_pred)
+
+    df = pd.DataFrame(
+        {"Accuracy": accuracy, "F1": f1, "Precision": precision, "Recall": recall}, index=[1]
+    )
+    return df.to_latex(
+        buf=None,
+        index=False,
+        caption="Model performance metrics",
+        label=label,
+    )
+
+@click.command()
+@click.argument("model_path", type=click.Path(exists=True))
+@click.argument("test_path", type=click.Path(exists=True))
+@click.argument("label", type=click.STRING)
+def make_metrics(model_path, test_path, label):
+    """Score the model in MODEL_PATH on data in TEST_PATH and output LaTeX table."""
+    click.echo(make_metrics_latex(model_path, test_path, label))
+
 
 def make_confusion_matrix(
     weights_file, test_path, threshold=0.5, color_mode="grayscale"

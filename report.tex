@@ -4,6 +4,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
+\usepackage{booktabs}
 \usepackage{multicol, caption}
 \newenvironment{Figure}
   {\par\medskip\noindent\minipage{\linewidth}}
@@ -147,6 +148,10 @@
 
   \section{Results}
 
+  We determined that the fake face classification task is
+  still achievable with a relatively simple CNN model, but that model also
+  failed to generalize to the unseen FairFace dataset.
+
   \subsection{Preprocessing}
 
   We utilized two pre-trained face recognition models to locate the human face
@@ -169,8 +174,6 @@
     \label{falsepos}
   \end{Figure}
 
-  False negatives:
-
   \begin{Figure}
     \centering
     \includegraphics[width=0.7\textwidth]{figures/false-negatives.jpg}
@@ -178,24 +181,108 @@
     \label{falseneg}
   \end{Figure}
 
+  By applying the pixel2style2pixel encoding algorithm we were able to
+  successfully obtain a dataset of 79,484 matching pairs of real and fake
 
   \begin{Figure}
     \centering
     \includegraphics[width=0.7\textwidth]{figures/fair2fake.jpg}
-    \captionof{figure}{Sample of FairFace images encoded by pixel2style2pixel}
+    \captionof{figure}{Selected FairFace images before/after encoding by pixel2style2pixel}
     \label{fair2fake}
   \end{Figure}
 
   \subsection{Model Performance}
 
-  TODO: model performance metrics go here
+  The baseline model achieved the following performance on the Fake Faces test
+  set, after 18 training epochs (Table \ref{baseline-metrics}):
+
+  \begin{Figure}
+    \captionof{table}{Baseline model performance}
+    \label{baseline-metrics}
+    \begin{tabular}{rrrr}
+    \toprule
+     Accuracy &        F1 &  Precision &    Recall \\
+    \midrule
+     0.942197 &  0.941569 &   0.951865 &  0.931493 \\
+    \bottomrule
+    \end{tabular}
+  \end{Figure}
+
+  Our best model in hyperparameter tuning was a variant of the VGG architecture
+  with 10 total layers (8 convolution layers and 2 fully connected layers).
+  This model's performance is given by (Figure \ref{vgg10-fakeface-metrics}).
+  TODO: cite VGG paper here
+
+  \begin{Figure}
+    \centering
+    \captionof{table}{Model performance on Fake Faces test set}
+    \label{vgg10-fakeface-metrics}
+    \begin{tabular}{rrrr}
+    \toprule
+     Accuracy &        F1 &  Precision &    Recall \\
+    \midrule
+     0.968298 &  0.967689 &   0.986595 &  0.949495 \\
+    \bottomrule
+    \end{tabular}
+  \end{Figure}
+    
 
   \subsection{Fairness Assessment}
 
-  Our initial model trained on the 70k real and fake faces dataset failed to
-  generalize to the FairFace dataset.
+  Our best model trained on the 70k real and fake faces dataset failed to
+  generalize to the FairFace dataset, marking nearly all of the FairFace
+  observations as fake faces, resulting in high recall but very low precision
+  and accuracy scores (Figure \ref{vgg10-transfer-fail}).
 
-  TODO: model performance metrics for model trained on fakeface only here
+  \begin{Figure}
+    \centering
+    \captionof{table}{Model performance metrics}
+    \label{vgg10-transfer-fail}
+    \begin{tabular}{rrrr}
+    \toprule
+    Accuracy &        F1 &  Precision &  Recall \\
+    \midrule
+      0.54305 &  0.676667 &    0.52357 &  0.9563 \\
+    \bottomrule
+    \end{tabular}
+  \end{Figure}
+
+  Because this model performed so poorly at generalizing to the FairFace data,
+  we decided not to even assess its demographic fairness metrics. Rather, we
+  retrained the same model on a combined dataset consisting of the entire
+  training sets from both the 70k real and fake faces and the FairFace datasets.
+
+  The resulting model performed very well on the combined dataset (Figure
+  \ref{vgg10-combined-metrics}), and even performed better on the 70 real and
+  fake faces dataset than the model version that was only trained on that
+  dataset (Figure \ref{vgg10-combined-fakefaces-metrics}), suggesting that the
+  additional training examples from FairFace led to a general improvement. 
+
+  \begin{Figure}
+    \centering
+    \captionof{table}{Model performance metrics on FairFace + Fake Faces combined dataset}
+    \label{vgg10-combined-metrics}
+    \begin{tabular}{rrrr}
+    \toprule
+    Accuracy &        F1 &  Precision &    Recall \\
+    \midrule
+    0.984457 &  0.984411 &   0.986268 &  0.982561 \\
+    \bottomrule
+    \end{tabular}
+  \end{Figure}
+
+  \begin{Figure}
+    \centering
+    \captionof{table}{Performance on Fake Faces test set for model trained on combined dataset}
+    \label{vgg10-combined-fakefaces-metrics}
+    \begin{tabular}{rrrr}
+    \toprule
+     Accuracy &        F1 &  Precision &    Recall \\
+    \midrule
+     0.971232 &  0.971092 &    0.97374 &  0.968458 \\
+    \bottomrule
+    \end{tabular}
+    \end{Figure}    
 
   TODO: model performance metrics for model trained on combined dataset here
 
@@ -248,7 +335,7 @@
   compute power at the problem. Using ample amounts of training data and more
   computer vision techniques we believe that there is still room to improve on
   our model. Although, as fake faces become better in better, we wonder how our
-  model would fair. Looking at a company like NVIDA, who has the resources to
+  model would fare. Looking at a company like NVIDIA, who has the resources to
   make fake faces using GANNs and enormous amounts of compute power, will it be
   possible to detect their fake faces? 
   

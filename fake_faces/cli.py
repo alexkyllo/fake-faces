@@ -9,6 +9,7 @@ tf.config.experimental.set_memory_growth(gpus[0], True)
 from fake_faces.processing import cropface, align_all, falsify
 from fake_faces.training import train, exp
 from fake_faces.labeling import label
+from fake_faces.testing import make_metrics
 
 @click.group()
 def cli():
@@ -25,6 +26,7 @@ def main():
     cli.add_command(train)
     cli.add_command(label)
     cli.add_command(exp)
+    cli.add_command(make_metrics)
     cli()
 
 
