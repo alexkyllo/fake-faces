@@ -187,6 +187,7 @@ def fairness_metrics(df):
     cm_age = stratify_cm(df, "age")
     cm_gender = stratify_cm(df, "gender")
     cm_race = stratify_cm(df, "race")
+
     disparate_male = disparate_impact_ratio(df.y_pred, df.gender.eq("Male").astype(int))
     disparate_white = disparate_impact_ratio(df.y_pred, df.race.eq("White").astype(int))
     disparate_nonblack = disparate_impact_ratio(
@@ -198,6 +199,7 @@ def fairness_metrics(df):
     disparate_nonsenior = disparate_impact_ratio(
         df.y_pred, ~df.age.eq("more than 70").astype(int)
     )
+
     fn_male = cm_gender.loc["Male", "fn"]
     fnr_male = fn_male / (fn_male + cm_gender.loc["Male", "tp"])
     fn_nonmale = cm_gender[cm_gender.index != "Male", "fn"].sum()
@@ -205,6 +207,31 @@ def fairness_metrics(df):
         fn_nonmale / (fn_nonmale + cm_gender[cm_gender.index != "Male", "fn"]).sum()
     )
 
+    fn_white = cm_race.loc["White", "fn"]
+    fnr_white = fn_white / (fn_white + cm_race.loc["White", "tp"])
+    fn_nonwhite = cm_race[cm_race.index != "White", "fn"]
+    fnr_nonwhite = fn_nonwhite / (fn_nonwhite + cm_race[cm_race.index != "White", "tp"])
+
+    fn_black = cm_race.loc["Black", "fn"]
+    fnr_black = fn_black / (fn_black + cm_race.loc["Black", "tp"])
+    fn_nonblack = cm_race[cm_race.index != "Black", "fn"]
+    fnr_nonblack = fn_nonblack / (fn_nonblack + cm_race[cm_race.index != "Black", "tp"])
+
+    fn_child = cm_age.loc[["0-2", "3-9"], "fn"]
+    fnr_child = fn_child / (fn_child + cm_age.loc[["0-2", "3-9"], "tp"])
+    fn_nonchild = cm_age[cm_age.index != "child", "fn"]
+    fnr_nonchild = fn_nonchild / (
+        fn_nonchild + cm_age[cm_age.index.isin(["0-2", "3-9"], "tp")]
+    )
+
+    fn_senior = cm_age.loc["more than 70", "fn"]
+    fnr_senior = fn_senior / (fn_senior + cm_age.loc["more than 70", "tp"])
+    fn_nonsenior = cm_age[cm_age.index != "senior", "fn"]
+    fnr_nonsenior = fn_nonsenior / (
+        fn_nonsenior + cm_age[cm_age.index != "senior", "tp"]
+    )
+
+    # TODO: FINISH THIS
     return pd.DataFrame(
         {
             "Disparate Impact": [
