@@ -5,18 +5,27 @@ channels:
 dependencies:
   - black
   - click
+  - dlib
   - eli5
   - jupyter
   - jupytext
+  - matplotlib
   - mtcnn
+  - ninja
   - numpy
+  - pandas
   - pillow
+  - pydot
   - pylint
   - pytest
   - python-dotenv
   - python-slugify
   - scikit-learn
   - tensorflow-gpu
+  - torch
+  - torchvision
+  - tqdm
   - pip:
       - azure-functions
+      - image-grid
       - questionary
