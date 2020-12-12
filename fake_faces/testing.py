@@ -165,6 +165,44 @@ def stratify_cm(df, var):
     return df_cm
 
 
+def group_privilege_var(df_cm, var, privilege_var, privilege_fn):
+    """Group a confusion matrix df by privileged var, applying is_privileged_fn."""
+    cm_priv = (
+        df_cm.reset_index()
+        .assign(
+            var=var,
+            privilege_var=privilege_var,
+            is_privileged=privilege_fn,
+        )
+        .groupby(["var", "privilege_var", "is_privileged"])[["tn", "fp", "fn", "tp"]]
+        .sum()
+    )
+    return cm_priv
+
+
+def stratify_all(df):
+    """Get confusion table stratified by all privilege vars."""
+    cm_age = stratify_cm(df, "age")
+    cm_gender = stratify_cm(df, "gender")
+    cm_race = stratify_cm(df, "race")
+
+    cm_male = group_privilege_var(
+        cm_gender, "gender", "Male", lambda x: x.gender == "Male"
+    )
+    cm_white = group_privilege_var(
+        cm_race, "race", "White", lambda x: x.race == "White"
+    )
+    cm_nonblack = group_privilege_var(
+        cm_race, "race", "Non-Black", lambda x: x.race != "Black"
+    )
+    cm_nonchild = group_privilege_var(
+        cm_age, "age", "Non-Child", lambda x: ~(x.age.isin(["0-2", "3-9"]))
+    )
+    cm_nonsenior = group_privilege_var(
+        cm_age, "race", "Non-Senior", lambda x: x.age != "more than 70"
+    )
+
+
 def disparate_impact_ratio(predictions, privileged):
     """P(yhat=1|unprivileged)/P(yhat=1|privileged)
     Expects a numpy array of binary predictions and an equal
