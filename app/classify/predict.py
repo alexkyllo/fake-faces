@@ -1,9 +1,11 @@
 """predict.py
 Perform inference on a single image from a URL."""
 import os  # os in order to grab the correct path for the model
+# import sys
+# import math
 import logging
 import urllib  # Used to convert from URL to an image file
-from io import BytesIO  # Used to convert from URL to an image file
+from io import BytesIO, StringIO  # Used to convert from URL to an image file
 import tensorflow as tf
 import tensorflow.keras.preprocessing.image as image
 from tensorflow.keras.models import load_model
@@ -24,8 +26,16 @@ def load_image(url):
     return image.img_to_array(img)
 
 def load_image_b(img_file):
-    logging.info("predict.py, load_image_b")
-    img = Image.open(BytesIO(img_file)).resize((128, 128))
+    logging.info("predict.py: Image file: %s", img_file)
+    # img = Image.open(img_file)
+    # imgFile = BytesIO(img_file)
+    
+    img = Image.open(BytesIO(img_file))
+    # img = Image.open(StringIO(img_file)).resize((128, 128))
+    # TODO: Put size of image in as second param for frombytes, or solve "not enough image data" problem with BytesIO
+    
+    # img = Image.frombytes('RGBA', (180, 180), img_file, 'raw')
+    img = img.resize((128,128))
     img = img.convert("L")
     return image.img_to_array(img)
 
@@ -38,6 +48,7 @@ def predict_image_from_url(image_url):
 
     # Convert from shape (128, 128, 3) to (1, 128, 128, 3)
     img = tf.expand_dims(img, axis=0)
+    logging.info(img.shape.as_list())
 
     ### Load the model file
     # Code from: https://github.com/microsoft/vscode-azurefunctions/issues/1439
@@ -60,7 +71,7 @@ def predict_image_from_file(image_file):
 
     # Convert from shape (128, 128, 3) to (1, 128, 128, 3)
     img = tf.expand_dims(img, axis=0)
-
+    print(img.shape.as_list())
     ### Load the model file
     # Code from: https://github.com/microsoft/vscode-azurefunctions/issues/1439
     function_dir = os.path.dirname(os.path.realpath(__file__))

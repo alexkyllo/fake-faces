@@ -4,13 +4,15 @@ import json
 import tempfile
 from .predict import predict_image_from_url, predict_image_from_file
 
+# 
+
 def main(req: func.HttpRequest) -> func.HttpResponse:
     image_url = req.params.get('img')
     logging.info('Image URL received: %s', image_url)
     if image_url == None:
-        imgFile = tempfile.TemporaryFile()
-        imgFile.write(req.get_body())
-        results = predict_image_from_file(imgFile)
+        # imgFile = tempfile.TemporaryFile()
+        # imgFile.write(req.get_body())
+        results = predict_image_from_file(req.get_body())
     else:
         results = predict_image_from_url(image_url)
 

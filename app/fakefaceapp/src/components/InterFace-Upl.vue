@@ -3,7 +3,7 @@
         <form class="form-signin" v-on:submit.prevent="onSubmit">
           <h1>Or upload your file here:</h1>
           <div class="form-group">
-            <input type="file" @change="onFileSelected" />
+            <input type="file" name="image" @change="onFileSelected" />
           </div>
           <div class="form-group" v-if="!results && !waiting">
             <input type="submit" class="btn btn-primary" value="submit">
@@ -37,15 +37,45 @@
           },
           methods: {
               onSubmit() {
-                this.waiting = true;
+                // this.waiting = true;
 
-                const fd = new FormData();
-                fd.append('image', this.selectedFile, this.selectedFile.name)
+                // const reader = new FileReader();
+                var fd = new FormData();
+                fd.append('img', this.selectedFile)
+
+                // var request = new XMLHttpRequest();
+                // var addr = apiBaseUrl + '/api/classify';
+
+                // request.open("POST", addr);
+                // request.send(fd);
+
+                // if (this.selectedFile) {
+                //   reader.readAsDataURL(this.selectedFile);
+                // }
+
+                // reader.onload = e => {
+                //   this.url = e.target.result;
+                // }
+
+                
+                // // superagent
+                // // .get(apiBaseUrl + '/api/classify')
+                // // .query({ img: this.url })
+                // // .end(function (err, res) {
+                // // this.waiting = false;
+                // // if (err) {
+                // //     this.results = null;
+                // //     alert("An error has occurred");
+                // // } else {
+                // //     res.body["result"] == "Not a fake" ? this.resStyle = 'color: green' : this.resStyle = 'color: red';
+                // //     this.results = res.body["result"];
+                // // }
+                // // }.bind(this));
 
                 superagent
                     .post(apiBaseUrl + '/api/classify')
                     .accept('application/json')
-                    .attach('image', fd)
+                    .send(fd)
                     .end(function (err, res) {
                         this.waiting = false;
                         if (err) {
