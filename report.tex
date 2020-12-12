@@ -12,6 +12,9 @@
 \usepackage{cite}
 \usepackage{graphicx}
 \usepackage{wrapfig}
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}
+}
 \setlength{\columnsep}{1cm}
 \setcounter{secnumdepth}{-\maxdimen}
 \title{Fake Face Detection}
@@ -91,11 +94,12 @@
   We tested several methods for preprocessing and augmenting the image data
   before feeding it into the CNN model.
 
-  \begin{enumerate}
+  \begin{itemize}
+    \tightlist
   \item 3-color (RGB) images vs. grayscale
   \item Pre-cropping and centering faces using pre-trained face detection models
   \item Random horizontal flips
-  \end{enumerate}
+  \end{itemize}
 
   For pre-cropping, we utilized two different pre-trained face detection models,
   MTCNN and Dlib. (TODO: citations)
@@ -128,11 +132,16 @@
   confusion matrix and report F1 score, precision score and recall score in
   addition to accuracy score.
 
-  For fairness metrics, we compare false positive rate and false negative rate
-  ratios for the following binary group definitions taken from the FairFace
+  For fairness metrics, we compare disparate impact ratio, given by the ratio
+  of the rate of positive predictions for the unprivileged class to that of the
+  privileged class \cite{fairMLHealth},
+  $$\frac{P(\hat{y}|unprivileged)}{P(\hat{y}|privileged)}$$
+  as well as false positive rate and false negative rate differences
+  for the following binary group definitions taken from the FairFace
   labels:
 
   \begin{enumerate}
+    \tightlist
   \item Gender = ``male'' compared to Gender = ``female''
   \item Race = ``white'' compared to all other races
   \item Race = ``black'' compared to all other races
@@ -247,9 +256,11 @@
     \end{tabular}
   \end{Figure}
 
-  Because this model performed so poorly at generalizing to the FairFace data,
-  we decided not to even assess its demographic fairness metrics. Rather, we
-  retrained the same model on a combined dataset consisting of the entire
+  We originally intended to perform a fairness assessment on both our baseline
+  model and our best model trained on the fake faces dataset, but because 
+  these models completely failed to generalize to the FairFace data,
+  we decided not to even assess their demographic fairness metrics. Rather, we
+  retrained our best model on a combined dataset consisting of the entire
   training sets from both the 70k real and fake faces and the FairFace datasets.
 
   The resulting model performed very well on the combined dataset (Figure
@@ -284,8 +295,6 @@
     \end{tabular}
     \end{Figure}    
 
-  TODO: model performance metrics for model trained on combined dataset here
-
   TODO: model fairness metrics go here
 
   \section{Discussion}
@@ -301,7 +310,8 @@
   a dramatic turn in the opposite direction. While investigating, we determined
   that there could be several causes for this decrease:
 	
-	\begin{enumerate}
+  \begin{enumerate}
+    \tightlist
   		\item The original training set had a specific pattern the our models were
   		detecting, causing our network to look for those specific details. It
   		could be something minute, such as the eyes having x and y coordinates

@@ -45,16 +45,21 @@ def get_probabilities(weights_file, test_path, color_mode="grayscale"):
     return (test.classes, predictions, test.filenames)
 
 
-def make_metrics_latex(weights_file, test_path, label, threshold=0.5, color_mode="grayscale"):
+def make_metrics_latex(
+    weights_file, test_path, label, threshold=0.5, color_mode="grayscale"
+):
     """Generate model metrics and output them to a LaTeX table."""
-    y, y_pred, filenames = get_predictions(weights_file, test_path, threshold, color_mode)
+    y, y_pred, filenames = get_predictions(
+        weights_file, test_path, threshold, color_mode
+    )
     f1 = metrics.f1_score(y, y_pred)
     accuracy = metrics.accuracy_score(y, y_pred)
     precision = metrics.precision_score(y, y_pred)
     recall = metrics.recall_score(y, y_pred)
 
     df = pd.DataFrame(
-        {"Accuracy": accuracy, "F1": f1, "Precision": precision, "Recall": recall}, index=[1]
+        {"Accuracy": accuracy, "F1": f1, "Precision": precision, "Recall": recall},
+        index=[1],
     )
     return df.to_latex(
         buf=None,
@@ -62,6 +67,7 @@ def make_metrics_latex(weights_file, test_path, label, threshold=0.5, color_mode
         caption="Model performance metrics",
         label=label,
     )
+
 
 @click.command()
 @click.argument("model_path", type=click.Path(exists=True))
@@ -105,21 +111,32 @@ def plot_learning_curves(history_file, loss=False):
     return ax
 
 
-def stratify(
-    var, model_path, label_path, test_path, threshold=0.5, color_mode="grayscale"
+def get_labeled_predictions(
+    model_path, label_path, test_path, threshold=0.5, color_mode="grayscale"
 ):
-    """Generate confusion matrix per each level of var.
-    var options supported by FairFace are 'age', 'gender', and 'race'.
-    Returns a DataFrame indexed by the grouping var, with 4 columns:
-    tn, fp, fn, tp"""
+    """Get a DataFrame of y, y_pred, filename and demographic labels"""
     df_labels = pd.read_csv(label_path)
     df_labels["basename"] = df_labels.file.apply(os.path.basename)
     y, y_pred, filenames = get_predictions(model_path, test_path, threshold, color_mode)
     basenames = [os.path.basename(f) for f in filenames]
     df_results = pd.DataFrame({"y": y, "y_pred": y_pred, "basename": basenames})
     df_results = df_results.merge(df_labels, how="left", on=["basename"])
+    df_results = df_results[~df_results.file.isna()]
+    return df_results
+
+
+def stratify(
+    var, model_path, label_path, test_path, threshold=0.5, color_mode="grayscale"
+):
+    """Generate confusion matrix per each level of var and stack in a DataFrame.
+    var options supported by FairFace are 'age', 'gender', and 'race'.
+    Returns a DataFrame indexed by the grouping var, with 4 columns:
+    tn, fp, fn, tp"""
+    df_results = get_labeled_predictions(
+        model_path, label_path, test_path, threshold, color_mode
+    )
     df_cm = (
-        df_results.groupby("age")
+        df_results.groupby(var)
         .apply(lambda x: metrics.confusion_matrix(x.y, x.y_pred).ravel())
         .reset_index()
     )
@@ -130,3 +147,91 @@ def stratify(
     df_cm = df_cm.drop(0, axis=1)
     df_cm = df_cm.set_index(var)
     return df_cm
+
+
+def stratify_cm(df, var):
+    """Group the output of get_labeled_predictions into a confusion table"""
+    df_cm = (
+        df.groupby(var)
+        .apply(lambda x: metrics.confusion_matrix(x.y, x.y_pred).ravel())
+        .reset_index()
+    )
+    df_cm["tn"] = df_cm[0].apply(lambda x: x[0])
+    df_cm["fp"] = df_cm[0].apply(lambda x: x[1])
+    df_cm["fn"] = df_cm[0].apply(lambda x: x[2])
+    df_cm["tp"] = df_cm[0].apply(lambda x: x[3])
+    df_cm = df_cm.drop(0, axis=1)
+    df_cm = df_cm.set_index(var)
+    return df_cm
+
+
+def disparate_impact_ratio(predictions, privileged):
+    """P(yhat=1|unprivileged)/P(yhat=1|privileged)
+    Expects a numpy array of binary predictions and an equal
+    length numpy array of binary privilege indicators
+    (where 1 = privileged class member).
+    """
+    ct11 = np.sum(predictions & privileged)
+    ct10 = np.sum(predictions & np.logical_not(privileged))
+    ct01 = np.sum(np.logical_not(predictions) & privileged)
+    ct00 = np.sum(np.logical_not(predictions | privileged))
+    ct = ct11 + ct10 + ct01 + ct00
+    p1un = np.divide(ct10, ct10 + ct00)
+    p1pr = np.divide(ct11, ct11 + ct01)
+    return np.divide(p1un, p1pr)
+
+
+def fairness_metrics(df):
+    """Report fairness metrics based on the DataFrame output from
+    get_labeled_predictions()."""
+    cm_age = stratify_cm(df, "age")
+    cm_gender = stratify_cm(df, "gender")
+    cm_race = stratify_cm(df, "race")
+    disparate_male = disparate_impact_ratio(df.y_pred, df.gender.eq("Male").astype(int))
+    disparate_white = disparate_impact_ratio(df.y_pred, df.race.eq("White").astype(int))
+    disparate_nonblack = disparate_impact_ratio(
+        df.y_pred, df.race.eq("Black").astype(int)
+    )
+    disparate_nonchild = disparate_impact_ratio(
+        df.y_pred, ~df.age.isin(["0-2", "3-9"]).astype(int)
+    )
+    disparate_nonsenior = disparate_impact_ratio(
+        df.y_pred, ~df.age.eq("more than 70").astype(int)
+    )
+    fn_male = cm_gender.loc["Male", "fn"]
+    fnr_male = fn_male / (fn_male + cm_gender.loc["Male", "tp"])
+    fn_nonmale = cm_gender[cm_gender.index != "Male", "fn"].sum()
+    fnr_nonmale = (
+        fn_nonmale / (fn_nonmale + cm_gender[cm_gender.index != "Male", "fn"]).sum()
+    )
+
+    return pd.DataFrame(
+        {
+            "Disparate Impact": [
+                disparate_male,
+                disparate_white,
+                disparate_nonblack,
+                disparate_nonchild,
+                disparate_nonsenior,
+            ],
+            "FNR": [
+                fnr_male,
+                fnr_nonmale,
+                fnr_white,
+                fnr_nonblack,
+                fnr_nonchild,
+                fnr_nonsenior,
+            ],
+            "FPR": [
+                fpr_male,
+                fpr_nonmale,
+                fpr_white,
+                fpr_nonblack,
+                fpr_nonchild,
+                fpr_nonsenior,
+            ],
+        },
+        index=["Male", "White", "Non-Black", "Age > 9", "Age < 70"],
+    )
+
+    # TODO: finish this
