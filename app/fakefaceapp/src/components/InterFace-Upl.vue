@@ -22,7 +22,7 @@
   
   <script>
       import superagent from 'superagent'
-      
+      // TODO: Updated apiBaseUrl
       var apiBaseUrl = 'http://localhost:7071'
   
       export default {

@@ -11,8 +11,11 @@ There are two projects in this folder.
 ### Prerequisites
 1. [Azure Functions core tools](https://docs.microsoft.com/en-us/azure/azure-functions/functions-run-local#install-the-azure-functions-core-tools)
 2. [Python 3.8.6](https://www.python.org/downloads/release/python-386/)
+3. [Node.js - NPM](https://nodejs.org/en/)
+4. Change to the fakefaceapp folder and install the package dependencies with ```npm install```
 
 ### Instructions
+1. Create a virtual environment in the app folder named ```.venv```
 1. From the terminal - start the function by activating the virtual environment: ```.venv/Scripts/activate```
 2. Start the local function: ```func start```
 3. Change to the fakefaceapp folder and start the local dev server: ```npm run serve```
