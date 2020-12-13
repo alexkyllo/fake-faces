@@ -96,7 +96,7 @@ def plot_learning_curves(history_file, loss=False):
     ax.plot(df.epoch, y_val, label=f"Validation {label}")
     ax.set_xlabel("Training Epochs")
     ax.set_ylabel(f"{label} Score")
-    ax.set_ylim(0, 1)
+    ax.set_ylim(0.5, 1)
     ax.legend(loc="best")
     fig.tight_layout()
     return (fig, ax)
