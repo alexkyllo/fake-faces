@@ -513,3 +513,5 @@ models/*
 history_*.csv
 /experiments/
 .vscode/settings.json
+app/fakefaceapp/host.json
+app/fakefaceapp/package-lock.json

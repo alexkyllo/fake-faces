@@ -7,8 +7,10 @@ import dotenv
 
 dotenv.load_dotenv()
 DATA_DIR = os.getenv("FAKE_FACES_DIR")
-COMBINED_DIR = os.getenv("COMBINED_DIR") # fakefaces and fairface data combined
-COMBINED_DIR_125 = os.getenv("COMBINED_DIR_125") # fakefaces and fairface data combined, with wider margin on fairface images
+COMBINED_DIR = os.getenv("COMBINED_DIR")  # fakefaces and fairface data combined
+COMBINED_DIR_125 = os.getenv(
+    "COMBINED_DIR_125"
+)  # fakefaces and fairface data combined, with wider margin on fairface images
 
 TRIALS = [
     # baseline cropped grayscale, no augmentation
@@ -66,6 +68,17 @@ TRIALS = [
         optimizer=Adam(learning_rate=0.0001),
     ),
     Experiment("vgg10 dlib hflip combined 125 0001", color_channels=1)
+    .set_pipeline(
+        os.path.join(COMBINED_DIR_125, "train/"),
+        os.path.join(COMBINED_DIR_125, "valid/"),
+        horizontal_flip=True,
+    )
+    .set_model(
+        VGG10,
+        dense_dropout_rate=0.5,
+        optimizer=Adam(learning_rate=0.0001),
+    ),
+    Experiment("vgg10 dlib hflip rgb combined 125 0001", color_channels=3)
     .set_pipeline(
         os.path.join(COMBINED_DIR_125, "train/"),
         os.path.join(COMBINED_DIR_125, "valid/"),

@@ -4,6 +4,7 @@
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
 \usepackage{amsmath}
+\usepackage{hyperref}
 \usepackage{booktabs}
 \usepackage{multicol, caption}
 \newenvironment{Figure}
@@ -38,26 +39,50 @@
   and 70,000 fake face images. We use the fake face classification problem to
   further explore the topic of model fairness, by evaluating the model's
   performance across age, gender and race groups on a demographically labeled
-  face dataset. To achieve this, we propose a method of utilizing an encoder
+  face dataset. To achieve this, we propose a method of utilizing an autoencoder
   network to translate demographically labeled real face images into an
-  approximation of their latent space representation and then reconstruct them,
-  creating a dataset of matching fake face images with the same demographic
-  labels. This allows us to assess whether our fake face detection model works
-  equally well for human faces of different age, gender and race groups, or
-  whether it even generalizes to a dataset that is demographically balanced.
+  approximation of their latent space code representations and then reconstruct
+  them back into images, creating a dataset of matching fake face images with
+  the same demographic labels. This allows us to assess whether our fake face
+  detection model works equally well for human faces of different age, gender
+  and race groups, or whether it even generalizes to a dataset that is
+  demographically diverse and balanced.
 \end{abstract}
 
 \begin{multicols}{2}
   \section{Introduction}
 
-  Generative Adversarial Networks (GANs) have created the ability to
-  encode photographic images into a latent space representation and
-  automatically generate many images that can appear to be genuine
-  photographs, to the human eye. NVIDIA's StyleGAN\cite{stylegan} model, trained
-  on a dataset of human face images, is capable of generating extremely
-  photo-realistic images of people who do not exist.
+  Generative Adversarial Networks (GANs) have created the ability to encode
+  photographic images into a latent space representation and automatically
+  generate many images that can appear to be genuine photographs, to the human
+  eye. NVIDIA's StyleGAN\cite{stylegan} model, trained on a dataset of human
+  face images, is capable of generating extremely photo-realistic images of
+  people who do not exist. StyleGAN is an example of a generative adversarial
+  network (GAN), a type of network that consists of two models, a
+  \emph{generator}, which learns a data distribution from a training set and
+  draws from it, and a \emph{discriminator}, which learns to estimate the
+  probability that a sample came from the training data or from the generator
+  \cite{goodfellow2014generative}.
 
-  An issue with the available open datasets of human faces is bias in the
+  The application of GANs to generating realistic human faces has garnered much
+  media attention in recent years. The well-known website 
+  \href{https://thispersondoesnotexist.com/}{This Person Does Not Exist} serves
+  random, high-resolution fake face images drawn from StyleGAN. Many models have
+  been created for exploring the latent space of StyleGAN to discover vectors
+  that correspond to semantic directions in which the latent codes can be 
+  perturbed in order to make semantic edits to human face photos, such as making
+  the face look older vs. younger, more masculine vs. more feminine 
+  \cite{shen2020interpreting}, or thinner vs. heavier 
+  \cite{pinnimty2020transforming}. The popular mobile application FaceApp
+  utilizes this method to allow users to transform images of themselves in this
+  manner and share them on social media for humor. Two different people's face
+  images can also be blended together by encoding both images and interpolating
+  some point between them in the latent space, which can be used for applications
+  like visualizing what a couple's children might look like, a concept that
+  has been implemented in the project
+  \href{https://medium.com/swlh/familygan-generating-a-childs-face-using-his-parents-394d8face6a4}{FamilyGAN}.
+
+  A problem with the available open datasets of human faces is bias in the
   demographic composition of the pictured individuals. The machine learning
   community has recently been struggling with the issue of model fairness--it is
   important that models perform equitably for users and data subjects of 

@@ -202,6 +202,19 @@ def stratify_all(df):
         cm_age, "race", "Non-Senior", lambda x: x.age != "more than 70"
     )
 
+    cm_all = (
+        cm_male.union(cm_white)
+        .union(cm_nonblack)
+        .union(cm_nonchild)
+        .union(cm_nonsenior)
+    )
+    cm_all["fnr"] = cm_all["fn"] / (cm_all["fn"] + cm_all["tp"])
+    cm_all["fpr"] = cm_all["fp"] / (cm_all["fp"] + cm_all["tn"])
+    cm_all["tpr"] = cm_all["tp"] / (cm_all["tp"] + cm_all["fn"])
+    cm_all["tnr"] = cm_all["tn"] / (cm_all["tn"] + cm_all["fp"])
+
+    return cm_all
+
 
 def disparate_impact_ratio(predictions, privileged):
     """P(yhat=1|unprivileged)/P(yhat=1|privileged)
@@ -222,10 +235,6 @@ def disparate_impact_ratio(predictions, privileged):
 def fairness_metrics(df):
     """Report fairness metrics based on the DataFrame output from
     get_labeled_predictions()."""
-    cm_age = stratify_cm(df, "age")
-    cm_gender = stratify_cm(df, "gender")
-    cm_race = stratify_cm(df, "race")
-
     disparate_male = disparate_impact_ratio(df.y_pred, df.gender.eq("Male").astype(int))
     disparate_white = disparate_impact_ratio(df.y_pred, df.race.eq("White").astype(int))
     disparate_nonblack = disparate_impact_ratio(
@@ -238,36 +247,7 @@ def fairness_metrics(df):
         df.y_pred, ~df.age.eq("more than 70").astype(int)
     )
 
-    fn_male = cm_gender.loc["Male", "fn"]
-    fnr_male = fn_male / (fn_male + cm_gender.loc["Male", "tp"])
-    fn_nonmale = cm_gender[cm_gender.index != "Male", "fn"].sum()
-    fnr_nonmale = (
-        fn_nonmale / (fn_nonmale + cm_gender[cm_gender.index != "Male", "fn"]).sum()
-    )
-
-    fn_white = cm_race.loc["White", "fn"]
-    fnr_white = fn_white / (fn_white + cm_race.loc["White", "tp"])
-    fn_nonwhite = cm_race[cm_race.index != "White", "fn"]
-    fnr_nonwhite = fn_nonwhite / (fn_nonwhite + cm_race[cm_race.index != "White", "tp"])
-
-    fn_black = cm_race.loc["Black", "fn"]
-    fnr_black = fn_black / (fn_black + cm_race.loc["Black", "tp"])
-    fn_nonblack = cm_race[cm_race.index != "Black", "fn"]
-    fnr_nonblack = fn_nonblack / (fn_nonblack + cm_race[cm_race.index != "Black", "tp"])
-
-    fn_child = cm_age.loc[["0-2", "3-9"], "fn"]
-    fnr_child = fn_child / (fn_child + cm_age.loc[["0-2", "3-9"], "tp"])
-    fn_nonchild = cm_age[cm_age.index != "child", "fn"]
-    fnr_nonchild = fn_nonchild / (
-        fn_nonchild + cm_age[cm_age.index.isin(["0-2", "3-9"], "tp")]
-    )
-
-    fn_senior = cm_age.loc["more than 70", "fn"]
-    fnr_senior = fn_senior / (fn_senior + cm_age.loc["more than 70", "tp"])
-    fn_nonsenior = cm_age[cm_age.index != "senior", "fn"]
-    fnr_nonsenior = fn_nonsenior / (
-        fn_nonsenior + cm_age[cm_age.index != "senior", "tp"]
-    )
+    cm_all = stratify_all(df)
 
     # TODO: FINISH THIS
     return pd.DataFrame(
