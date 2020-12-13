@@ -10,9 +10,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     image_url = req.params.get('img')
     logging.info('Image URL received: %s', image_url)
     if image_url == None:
-        # imgFile = tempfile.TemporaryFile()
-        # imgFile.write(req.get_body())
-        results = predict_image_from_file(req.get_body())
+        logging.info(req.files.values())
+        for input_file in req.files.values():
+            logging.info('In Loop!!')
+            filename = input_file.filename
+            contents = input_file.stream.read()
+            logging.info('Filename: %s' % filename)
+
+            image_contents = contents
+        logging.info('Out of loop!')
+        results = predict_image_from_file(image_contents)
     else:
         results = predict_image_from_url(image_url)
 

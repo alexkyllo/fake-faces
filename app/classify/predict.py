@@ -16,7 +16,6 @@ from PIL import Image  # Used to convert from URL to an image file
 # Code from: https://stackoverflow.com/questions/55821612/whats-the-fastest-way-to-read-images-from-urls
 def load_image(url):
     """Open image bytes from a URL and return as a numpy array."""
-    # if url == "https://thispersondoesnotexist.com/image": url += ".jpg"
     logging.info("predict.py: Image URL received now: %s", url)
 
     with urllib.request.urlopen(url) as img_url:
@@ -26,7 +25,7 @@ def load_image(url):
     return image.img_to_array(img)
 
 def load_image_b(img_file):
-    logging.info("predict.py: Image file: %s", img_file)
+    # logging.info("predict.py: Image file: %s", img_file)
     # img = Image.open(img_file)
     # imgFile = BytesIO(img_file)
     
