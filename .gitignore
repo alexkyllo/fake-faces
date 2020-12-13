@@ -515,5 +515,5 @@ history_*.csv
 .vscode/settings.json
 app/fakefaceapp/host.json
 app/fakefaceapp/package-lock.json
-tables/__latexindent_temp.tex
-__latexindent_temp.tex
+tables/__latexindent_temp.*
+__latexindent_temp.*

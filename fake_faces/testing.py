@@ -13,7 +13,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn import metrics
 import click
+import questionary
 from fake_faces import CLASS_MODE, BATCH_SIZE, SHAPE, RESCALE
+from fake_faces.experiments import EXPERIMENTS
 
 
 def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
@@ -67,15 +69,6 @@ def make_metrics_latex(
     )
 
 
-@click.command()
-@click.argument("model_path", type=click.Path(exists=True))
-@click.argument("test_path", type=click.Path(exists=True))
-@click.argument("label", type=click.STRING)
-def make_metrics(model_path, test_path, label):
-    """Score the model in MODEL_PATH on data in TEST_PATH and output LaTeX table."""
-    click.echo(make_metrics_latex(model_path, test_path, label))
-
-
 def make_confusion_matrix(
     weights_file, test_path, threshold=0.5, color_mode="grayscale"
 ):
@@ -101,12 +94,12 @@ def plot_learning_curves(history_file, loss=False):
         label = "Accuracy"
     ax.plot(df.epoch, y, label=f"Training {label}")
     ax.plot(df.epoch, y_val, label=f"Validation {label}")
-    ax.set_title("Learning Curve")
     ax.set_xlabel("Training Epochs")
     ax.set_ylabel(f"{label} Score")
+    ax.set_ylim(0, 1)
     ax.legend(loc="best")
     fig.tight_layout()
-    return ax
+    return (fig, ax)
 
 
 def get_labeled_predictions(
@@ -315,6 +308,30 @@ def make_fairness_metrics_latex(
         caption="Model performance metrics",
         label="fairnessmetrics",
     )
+
+
+@click.command()
+def learning_curves():
+    """Plot the learning curve for an experiment."""
+    exp_name = questionary.rawselect(
+        "Which experiment would you like to plot the learning curve for?",
+        list(EXPERIMENTS.keys()),
+    ).ask()
+    exp = EXPERIMENTS[exp_name]
+    output_path = f"figures/learning-curve-{exp.slug}.png"
+    history_file = exp.csv_path
+    fig, ax = plot_learning_curves(history_file)
+    plt.savefig(output_path)
+    click.echo(f"Learning curve plot for experiment {exp.slug} saved to {output_path}")
+
+
+@click.command()
+@click.argument("model_path", type=click.Path(exists=True))
+@click.argument("test_path", type=click.Path(exists=True))
+@click.argument("label", type=click.STRING)
+def make_metrics(model_path, test_path, label):
+    """Score the model in MODEL_PATH on data in TEST_PATH and output LaTeX table."""
+    click.echo(make_metrics_latex(model_path, test_path, label))
 
 
 @click.command()
