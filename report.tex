@@ -82,13 +82,21 @@
   has been implemented in the project
   \href{https://medium.com/swlh/familygan-generating-a-childs-face-using-his-parents-394d8face6a4}{FamilyGAN}.
 
-  A problem with the available open datasets of human faces is bias in the
-  demographic composition of the pictured individuals. The machine learning
-  community has recently been struggling with the issue of model fairness--it is
-  important that models perform equitably for users and data subjects of 
-  different backgrounds, and also very difficult to enumerate and quantify the 
-  sources of bias in training data that can contribute to biased model
-  performance.
+  It is also easy to imagine nefarious applications of fake face generation,
+  some of which have already been realized, such as swapping faces of
+  celebrities onto pornographic actors or falsifying speeches by political
+  leaders \cite{nguyen2020deep}. Therefore, there is a public interest in
+  retaining the ability to effectively discern real human face images and video
+  from fake ones and detect "deep fake" tampering, which requires training
+  more deep learning models to distinguish them.
+
+  A problem with the available open datasets of human faces used in training
+  deep learning models, is bias in the demographic composition of the pictured
+  individuals. The machine learning community has recently been struggling with
+  the issue of model fairness--it is important that models perform equitably for
+  users and data subjects of different backgrounds, and also very difficult to
+  enumerate and quantify the sources of bias in training data that can
+  contribute to biased model performance.
 
   The FairFace\cite{karkkainen2019fairface} study introduced a new dataset of
   human face images collected from public datasets with manually verified,
