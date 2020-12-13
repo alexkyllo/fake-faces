@@ -50,7 +50,7 @@ def make_metrics_latex(
 ):
     """Generate model metrics and output them to a LaTeX table."""
     y, y_pred, filenames = get_predictions(
-        weights_file, test_path, threshold, color_mode
+        weights_file, test_path, threshold, color_mode=color_mode
     )
     f1 = metrics.f1_score(y, y_pred)
     accuracy = metrics.accuracy_score(y, y_pred)
@@ -329,9 +329,11 @@ def learning_curves():
 @click.argument("model_path", type=click.Path(exists=True))
 @click.argument("test_path", type=click.Path(exists=True))
 @click.argument("label", type=click.STRING)
-def make_metrics(model_path, test_path, label):
+@click.option("--rgb/--grayscale", default=False)
+def make_metrics(model_path, test_path, label, rgb):
     """Score the model in MODEL_PATH on data in TEST_PATH and output LaTeX table."""
-    click.echo(make_metrics_latex(model_path, test_path, label))
+    color_mode = "rgb" if rgb else "grayscale"
+    click.echo(make_metrics_latex(model_path, test_path, label, color_mode=color_mode))
 
 
 @click.command()

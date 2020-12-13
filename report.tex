@@ -123,9 +123,11 @@
   encoder network\cite{richardson2020encoding} called
   \emph{pixel2style2pixel}, that is capable of approximately
   reconstructing StyleGAN's latent code representation of a face image
-  and then decoding it back into an image, leading to a fake face
+  and then decoding it back into an image. This yields a fake face
   output image that very closely resembles the real face input image,
-  implying that the original demographic labels would remain valid.
+  implying that the original demographic labels would remain valid,
+  and giving us a dataset of matching real and fake faces for
+  scoring our models and calculating classifier fairness metrics.
 
   \section{Methods}
 
@@ -139,16 +141,18 @@
   \item 3-color (RGB) images vs. grayscale
   \item Pre-cropping and centering faces using pre-trained face
     detection models
-  \item Random horizontal flips
+  \item Random horizontal flips, rotations, and shears
   \end{itemize}
 
-  For pre-cropping the images to center and align the faces with eyes,
-  nose and mouth level, we utilized two different pre-trained face
-  detection models. The first model we used was the Multi-Task
-  Cascaded Convolutional Neural Network (MTCNN)
+  Before training our CNN models we pre-cropped the images to center
+  and align the faces with eyes, nose and mouth level. We utilized two
+  different pre-trained face detection models. The first model we used
+  was the Multi-Task Cascaded Convolutional Neural Network (MTCNN)
   \cite{Zhang_2016}. Later, we switched to utilizing the Dlib package
   implementation of the Shape Predictor 68 Face Landmarks model
-  \cite{SAGONAS20163} because the .
+  \cite{SAGONAS20163} because the \emph{pixel2style2pixel} model was
+  trained on face images that were aligned with this model and expects
+  such as input.
 
   \subsection{Model Training}
 
@@ -160,7 +164,10 @@
 
   Our intial baseline model was a CNN with three convolution layers
   using a 3x3 element kernel. We trained it on grayscale images from
-  the 70k fair and fake faces dataset, cropped using MTCNN.
+  the 70k fair and fake faces dataset, cropped using MTCNN, with no
+  image augmentations applied. The baseline model's learning curves
+  over training 20 epochs are pictured in Figure
+  \ref{learning-curve-baseline}.
 
   \begin{Figure}
     \centering
@@ -169,8 +176,12 @@
     \label{learning-curve-baseline}
   \end{Figure}
 
-  The learning curves for our best model trained on the combined dataset grayscale
-  (Figure \ref{learning-curve-vgg10-combined}) and RGB ((Figure \ref{learning-curve-vgg10-rgb-combined}))
+  Figure \ref{learning-curve-vgg10-combined} and Figure
+  \ref{learning-curve-vgg10-rgb-combined} depict the learning curves
+  for our best VGG-10 model, trained on the combined dataset in
+  grayscale and RGB, respectively. Using RGB color images did not appear to offer
+  a significant benefit, as both models were able to exceed 98\% validation accuracy
+  within fewer than 20 training epochs.
 
   \begin{Figure}
     \centering
@@ -202,9 +213,10 @@
   model selection was validation set accuracy, because the balanced
   classes of the input dataset made accuracy straightforward to
   interpret. For final model performance on out-of-sample test data,
-  we break down performance with a 2x2 confusion matrix and report F1
-  score, precision score and recall score in addition to accuracy
-  score.
+  we report performance using F1 score, precision score and recall
+  score in addition to accuracy score, to communicate how well the
+  model performed across a variety of standard binary classifier
+  metrics.
 
   For fairness metrics, we selected two standard binary classifier
   metrics to evaluate our classifier on: disparate impact ratio, given
@@ -271,8 +283,9 @@
     \label{falseneg}
   \end{Figure}
 
-  By applying the pixel2style2pixel encoding algorithm we were able to
-  successfully obtain a dataset of 79,484 matching pairs of real and fake
+  By applying the pixel2style2pixel encoding algorithm to the FairFace images,
+  we were able to successfully obtain a dataset of 79,484 matching pairs of
+  real and fake faces with verified age, race, and gender labels.
 
   \begin{Figure}
     \centering
