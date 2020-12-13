@@ -139,6 +139,8 @@
   Our intial baseline model was a CNN with three convolution layers using a 3x3
   element kernel.
 
+  TODO: learning curves for baseline and best model
+
   \subsection{Model Serving}
 
   TODO: Details and screenshots of web application here
@@ -157,22 +159,28 @@
   confusion matrix and report F1 score, precision score and recall score in
   addition to accuracy score.
 
-  For fairness metrics, we compare disparate impact ratio, given by the ratio
+  For fairness metrics, we selected two standard binary classifier metrics to
+  evaluate our classifier on: disparate impact ratio, given by the ratio
   of the rate of positive predictions for the unprivileged class to that of the
-  privileged class \cite{fairMLHealth},
+  privileged class \cite{fairMLHealth}, given by:
+
   $$\frac{P(\hat{y}|unprivileged)}{P(\hat{y}|privileged)}$$
-  as well as false positive rate and false negative rate differences
+  
+  and average odds difference, given by:
+
+  $$\frac{(FPR_{unpriv} - FPR_{priv}) + (TPR_{unpriv} - TPR_{priv})}{2}$$
+  
   for the following binary group definitions taken from the FairFace
   labels:
 
   \begin{enumerate}
     \tightlist
-  \item Gender = ``male'' compared to Gender = ``female''
-  \item Race = ``white'' compared to all other races
-  \item Race = ``black'' compared to all other races
-  \item Age = ``0-2'' compared to all other ages
-  \item Age = ``3-9'' compared to all other ages
-  \item Age = ``more than 70'' compared to all other ages
+  \item Gender = ``male'' vs Gender = ``female''
+  \item Race = ``white'' vs all other races
+  \item Race = ``black'' vs all other races
+  \item Age = ``0-2'' vs all other ages
+  \item Age = ``3-9'' vs all other ages
+  \item Age = ``more than 70'' vs all other ages
   \end{enumerate}
 
   We examine the model fairness for children and senior citizens as a recent
@@ -186,7 +194,7 @@
   still achievable with a relatively simple CNN model, but that model also
   failed to generalize to the unseen FairFace dataset.
 
-  \subsection{Preprocessing}
+  \subsection{Preprocessing Results}
 
   We utilized two pre-trained face recognition models to locate the human face
   in the image, align it so that the eyes, nose and mouth are level and
@@ -225,7 +233,7 @@
     \label{fair2fake}
   \end{Figure}
 
-  \subsection{Model Performance}
+  \subsection{Model Performance Results}
 
   The baseline model achieved the following performance on the Fake Faces test
   set, after 18 training epochs (Table \ref{baseline-metrics}):
@@ -243,10 +251,10 @@
   \end{Figure}
 
   Our best model in hyperparameter tuning was a variant of the VGG architecture
-  with 10 total layers (8 convolution layers and 2 fully connected layers).
-  This model's performance is given by (Figure \ref{vgg10-fakeface-metrics}).
-  TODO: cite VGG paper here
-
+  \cite{simonyan2015deep} with 10 total layers (8 convolution layers and 2 fully
+  connected layers). This model's performance is given by
+  (Figure \ref{vgg10-fakeface-metrics}).
+  
   \begin{Figure}
     \centering
     \captionof{table}{Model performance on Fake Faces test set}
@@ -261,7 +269,7 @@
   \end{Figure}
     
 
-  \subsection{Fairness Assessment}
+  \subsection{Fairness Assessment Results}
 
   Our best model trained on the 70k real and fake faces dataset failed to
   generalize to the FairFace dataset, marking nearly all of the FairFace
@@ -319,8 +327,28 @@
     \bottomrule
     \end{tabular}
     \end{Figure}    
-
-  TODO: model fairness metrics go here
+  
+  Our best model, using the VGG10 architecture and trained on the combined
+  dataset, achieved excellent performance by the fairness metrics, disparate
+  impact ratio (where 1.0 is perfectly fair) and average odds difference
+  (where 0.0 is perfectly fair).
+  
+    \begin{Figure}
+      \centering
+      \captionof{table}{Model Fairness metrics}
+      \label{fairnessmetrics}
+      \begin{tabular}{lrr}
+      \toprule
+      {} &  Disparate Impact &  Avg Odds Diff \\
+      \midrule
+      Male       &                0.993955 &                -0.000031 \\
+      White      &                1.027800 &                -0.001012 \\
+      Non-Black  &                1.004817 &                 0.000983 \\
+      Non-Child  &                1.011344 &                 0.000167 \\
+      Non-Senior &                1.003951 &                 0.001968 \\
+      \bottomrule
+      \end{tabular}
+      \end{Figure}
 
   \section{Discussion}
   Our initial goal of detecting fake faces was quite successful, especially on

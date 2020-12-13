@@ -15,8 +15,6 @@ from sklearn import metrics
 import click
 from fake_faces import CLASS_MODE, BATCH_SIZE, SHAPE, RESCALE
 
-# TODO: write script to output LaTeX table of fairness metrics using pd.to_latex()
-
 
 def get_predictions(weights_file, test_path, threshold=0.5, color_mode="grayscale"):
     """Get a saved model's predictions on a directory of images, as 1s and 0s"""
@@ -199,14 +197,17 @@ def stratify_all(df):
         cm_age, "age", "Non-Child", lambda x: ~(x.age.isin(["0-2", "3-9"]))
     )
     cm_nonsenior = group_privilege_var(
-        cm_age, "race", "Non-Senior", lambda x: x.age != "more than 70"
+        cm_age, "age", "Non-Senior", lambda x: x.age != "more than 70"
     )
 
-    cm_all = (
-        cm_male.union(cm_white)
-        .union(cm_nonblack)
-        .union(cm_nonchild)
-        .union(cm_nonsenior)
+    cm_all = pd.concat(
+        [
+            cm_male,
+            cm_white,
+            cm_nonblack,
+            cm_nonchild,
+            cm_nonsenior,
+        ]
     )
     cm_all["fnr"] = cm_all["fn"] / (cm_all["fn"] + cm_all["tp"])
     cm_all["fpr"] = cm_all["fp"] / (cm_all["fp"] + cm_all["tn"])
@@ -232,6 +233,11 @@ def disparate_impact_ratio(predictions, privileged):
     return np.divide(p1un, p1pr)
 
 
+def average_odds_difference(fpr_unpriv, fpr_priv, tpr_unpriv, tpr_priv):
+    """Calculate the average odds difference fairness metric."""
+    return ((fpr_unpriv - fpr_priv) + (tpr_unpriv - tpr_priv)) / 2
+
+
 def fairness_metrics(df):
     """Report fairness metrics based on the DataFrame output from
     get_labeled_predictions()."""
@@ -241,42 +247,87 @@ def fairness_metrics(df):
         df.y_pred, df.race.eq("Black").astype(int)
     )
     disparate_nonchild = disparate_impact_ratio(
-        df.y_pred, ~df.age.isin(["0-2", "3-9"]).astype(int)
+        df.y_pred, np.logical_not(df.age.isin(["0-2", "3-9"])).astype(int)
     )
     disparate_nonsenior = disparate_impact_ratio(
-        df.y_pred, ~df.age.eq("more than 70").astype(int)
+        df.y_pred, np.logical_not(df.age.eq("more than 70")).astype(int)
     )
 
     cm_all = stratify_all(df)
 
-    # TODO: FINISH THIS
     return pd.DataFrame(
         {
-            "Disparate Impact": [
+            "Disparate Impact Ratio": [
                 disparate_male,
                 disparate_white,
                 disparate_nonblack,
                 disparate_nonchild,
                 disparate_nonsenior,
             ],
-            "FNR": [
-                fnr_male,
-                fnr_nonmale,
-                fnr_white,
-                fnr_nonblack,
-                fnr_nonchild,
-                fnr_nonsenior,
-            ],
-            "FPR": [
-                fpr_male,
-                fpr_nonmale,
-                fpr_white,
-                fpr_nonblack,
-                fpr_nonchild,
-                fpr_nonsenior,
+            "Average Odds Difference": [
+                average_odds_difference(
+                    cm_all.loc["gender", "Male", False]["fpr"],
+                    cm_all.loc["gender", "Male", True]["fpr"],
+                    cm_all.loc["gender", "Male", False]["tpr"],
+                    cm_all.loc["gender", "Male", True]["tpr"],
+                ),
+                average_odds_difference(
+                    cm_all.loc["race", "White", False]["fpr"],
+                    cm_all.loc["race", "White", True]["fpr"],
+                    cm_all.loc["race", "White", False]["tpr"],
+                    cm_all.loc["race", "White", True]["tpr"],
+                ),
+                average_odds_difference(
+                    cm_all.loc["race", "Non-Black", False]["fpr"],
+                    cm_all.loc["race", "Non-Black", True]["fpr"],
+                    cm_all.loc["race", "Non-Black", False]["tpr"],
+                    cm_all.loc["race", "Non-Black", True]["tpr"],
+                ),
+                average_odds_difference(
+                    cm_all.loc["age", "Non-Child", False]["fpr"],
+                    cm_all.loc["age", "Non-Child", True]["fpr"],
+                    cm_all.loc["age", "Non-Child", False]["tpr"],
+                    cm_all.loc["age", "Non-Child", True]["tpr"],
+                ),
+                average_odds_difference(
+                    cm_all.loc["age", "Non-Senior", False]["fpr"],
+                    cm_all.loc["age", "Non-Senior", True]["fpr"],
+                    cm_all.loc["age", "Non-Senior", False]["tpr"],
+                    cm_all.loc["age", "Non-Senior", True]["tpr"],
+                ),
             ],
         },
-        index=["Male", "White", "Non-Black", "Age > 9", "Age < 70"],
+        index=["Male", "White", "Non-Black", "Non-Child", "Non-Senior"],
     )
 
-    # TODO: finish this
+
+def make_fairness_metrics_latex(
+    weights_file, label_path, test_path, threshold=0.5, color_mode="grayscale"
+):
+    """Generate model metrics and output them to a LaTeX table."""
+    df_results = get_labeled_predictions(
+        weights_file, label_path, test_path, threshold, color_mode
+    )
+    df_fairness = fairness_metrics(df_results)
+    return df_fairness.to_latex(
+        buf=None,
+        index=True,
+        caption="Model performance metrics",
+        label="fairnessmetrics",
+    )
+
+
+@click.command()
+@click.argument("model_path", type=click.Path(exists=True))
+@click.argument("label_path", type=click.Path(exists=True))
+@click.argument("test_path", type=click.Path(exists=True))
+@click.option("--rgb/--grayscale", default=False)
+def make_fairness_metrics(model_path, label_path, test_path, rgb):
+    """Calculate fairness metrics on model in MODEL_PATH on labels in LABEL_PATH
+    and data in TEST_PATH and output LaTeX table."""
+    color_mode = "rgb" if rgb else "grayscale"
+    click.echo(
+        make_fairness_metrics_latex(
+            model_path, label_path, test_path, color_mode=color_mode
+        )
+    )
