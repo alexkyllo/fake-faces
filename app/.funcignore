@@ -1,5 +1,6 @@
 
 
-\.venv
-\.vscode
-\fakefaceapp
+.venv/
+.vscode/
+fakefaceapp/
+local.settings.json
