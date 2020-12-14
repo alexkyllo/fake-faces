@@ -12,13 +12,13 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     if image_url == None:
         logging.info(req.files.values())
         for input_file in req.files.values():
-            logging.info('In Loop!!')
-            filename = input_file.filename
+            # logging.info('In Loop!!')
+            # filename = input_file.filename
             contents = input_file.stream.read()
-            logging.info('Filename: %s' % filename)
+            # logging.info('Filename: %s' % filename)
 
             image_contents = contents
-        logging.info('Out of loop!')
+        # logging.info('Out of loop!')
         results = predict_image_from_file(image_contents)
     else:
         results = predict_image_from_url(image_url)
@@ -32,7 +32,7 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
     logging.info('Result: %s', results)
 
     resp = {"result": "Unk"}
-    if (results[0] == False):
+    if (results[0] > .50):
         resp["result"] = "Not a fake"
     else: resp["result"] = "Fake"
 
