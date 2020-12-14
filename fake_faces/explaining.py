@@ -1,70 +1,36 @@
 """explaining.py
 Visually explain model predictions
+# NOTE: We were not able to get this code working due to an issue with the eli5 package.
 """
 import eli5
 import numpy as np
+import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing.image import load_img, img_to_array, array_to_img
+from tensorflow.keras.models import load_model
 from fake_faces.training import SHAPE
 from tensorflow import keras
 import tensorflow as tf
+import click
+gpus = tf.config.experimental.list_physical_devices("GPU")
+tf.config.experimental.set_memory_growth(gpus[0], True)
 
-
-def explain(model, color_mode, image_path):
+def explain_image(model, color_mode, image_path):
     """Plot on an image a visualization of the areas used to classify it."""
-    # TODO: This has not been successfully tested yet.
+    tf.compat.v1.disable_eager_execution()
     im = load_img(image_path, color_mode=color_mode, target_size=SHAPE)  # -> PIL image
-    pixels = np.expand_dims(img_to_array(im), axis=0)
-    prediction = eli5.explain_prediction(model, pixels)
+    pixels = np.expand_dims(img_to_array(im) / 255.0, axis=0)
+    prediction = eli5.explain_prediction(model, pixels, image=im)
     return eli5.format_as_image(prediction)
 
-
-def make_gradcam_heatmap(
-    img_array, model, last_conv_layer_name, classifier_layer_names
-):
-    """from https://keras.io/examples/vision/grad_cam/"""
-    # First, we create a model that maps the input image to the activations
-    # of the last conv layer
-    last_conv_layer = model.get_layer(last_conv_layer_name)
-    last_conv_layer_model = keras.Model(model.inputs, last_conv_layer.output)
-
-    # Second, we create a model that maps the activations of the last conv
-    # layer to the final class predictions
-    classifier_input = keras.Input(shape=last_conv_layer.output.shape[1:])
-    x = classifier_input
-    for layer_name in classifier_layer_names:
-        x = model.get_layer(layer_name)(x)
-    classifier_model = keras.Model(classifier_input, x)
-
-    # Then, we compute the gradient of the top predicted class for our input image
-    # with respect to the activations of the last conv layer
-    with tf.GradientTape() as tape:
-        # Compute activations of the last conv layer and make the tape watch it
-        last_conv_layer_output = last_conv_layer_model(img_array)
-        tape.watch(last_conv_layer_output)
-        # Compute class predictions
-        preds = classifier_model(last_conv_layer_output)
-        top_pred_index = tf.argmax(preds[0])
-        top_class_channel = preds[:, top_pred_index]
-
-    # This is the gradient of the top predicted class with regard to
-    # the output feature map of the last conv layer
-    grads = tape.gradient(top_class_channel, last_conv_layer_output)
-
-    # This is a vector where each entry is the mean intensity of the gradient
-    # over a specific feature map channel
-    pooled_grads = tf.reduce_mean(grads, axis=(0, 1, 2))
-
-    # We multiply each channel in the feature map array
-    # by "how important this channel is" with regard to the top predicted class
-    last_conv_layer_output = last_conv_layer_output.numpy()[0]
-    pooled_grads = pooled_grads.numpy()
-    for i in range(pooled_grads.shape[-1]):
-        last_conv_layer_output[:, :, i] *= pooled_grads[i]
-
-    # The channel-wise mean of the resulting feature map
-    # is our heatmap of class activation
-    heatmap = np.mean(last_conv_layer_output, axis=-1)
-
-    # For visualization purpose, we will also normalize the heatmap between 0 & 1
-    heatmap = np.maximum(heatmap, 0) / np.max(heatmap)
-    return heatmap
+@click.command()
+@click.argument("model_path", type=click.Path(exists=True))
+@click.argument("image_path", type=click.Path(exists=True))
+@click.argument("output_path", type=click.Path())
+@click.option("--rgb/--grayscale", default=False)
+def explain(model_path, image_path, output_path, rgb):
+    """Use MODEL_PATH to predict IMAGE_PATH with pixel activation map."""
+    color_mode = "rgb" if rgb else "grayscale"
+    model = load_model(model_path)
+    explanation = explain_image(model, color_mode, image_path)
+    plt.savefig(output_path)
+    click.echo(f"Image pixel activation map saved to {output_path}")
