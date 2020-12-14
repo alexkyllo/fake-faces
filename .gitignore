@@ -512,3 +512,8 @@ models/*
 /history_*.csv
 history_*.csv
 /experiments/
+.vscode/settings.json
+app/fakefaceapp/host.json
+app/fakefaceapp/package-lock.json
+tables/__latexindent_temp.*
+__latexindent_temp.*

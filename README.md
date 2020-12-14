@@ -13,12 +13,28 @@ OR, install [miniconda3](https://docs.conda.io/en/latest/miniconda.html) and the
 Then, once the packages are installed, type `conda activate fake-faces` to activate
 the environment.
 
-Install `make`: on Ubuntu, `sudo apt install make`
+OR, use the Dockerfile to install the project in a Docker container.
+
+First, install
+[NVIDIA Docker support](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker)
+
+Then build and run the container:
+
+``` shell
+sudo docker build --tag fake-faces:latest .
+sudo docker run --gpus all -v path/to/fakefaces/real_vs_fake:path/to/fakefaces/real_vs_fake -it fake-faces:latest bash
+fake-faces
+```
+### Build Tools
+
+Install `make`, `cmake` and `ninja`: on Ubuntu, `sudo apt install make cmake ninja-build -y`
 
 Install a LaTeX distribution, such as `TeXLive` or `MiKTeX`, that includes `pdflatex`
 to compile the PDF report.
 
 ### GPU Support
+
+If you use the Docker method, the GPU support is provided the NVIDIA Docker support software (link above).
 
 If you use the `conda` method, the GPU support should be automatic because
 `tensorflow-gpu` is a dependency.
@@ -36,13 +52,38 @@ export PATH=/usr/local/cuda/bin:$PATH
 export LD_LIBRARY_PATH=/usr/local/cuda/lib64:/usr/local/cuda-10.2/targets/x86_64-linux/lib:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
 ```
 
-Download the fake faces dataset (4 GB zipped) from
-https://www.kaggle.com/xhlulu/140k-real-and-fake-faces, decompress it on a drive
-and create a `.env` file in this directory with the following content, to tell the
+Download the fake faces dataset (4 GB zipped) from:
+https://www.kaggle.com/xhlulu/140k-real-and-fake-faces
+
+Download the FairFace dataset [Padding=1.25] version (2 GB zipped)
+from: https://github.com/joojs/fairface
+
+Unzip these datasets onto a drive and create a `.env` file in this
+directory with the following content, to tell the
 python package where the dataset is located:
 
 ``` shell
 FAKE_FACES_DIR=path/to/fakefaces/real_vs_fake
+FAIR_FACES_DIR=path/to/fairface-img-margin125-trainval
+```
+
+## Cropping input images
+
+We have generally seen better results on pre-cropped face images.
+To detect and crop faces in a directory of images with the MTCNN model, use:
+
+``` shell
+fake-faces cropface INPUT_PATH OUTPUT_PATH
+```
+
+A pre-trained MTCNN model will be used to detect the largest face in each image, crop to it,
+and output the cropped image in OUTPUT_PATH with the same filename. If no face is detected,
+the file will be skipped.
+
+To use the dlib model for cropping faces (required for input to pixel2style2pixel), use:
+
+``` shell
+fake-faces align-all INPUT_PATH OUTPUT_PATH
 ```
 
 ## Running Experiments
@@ -60,7 +101,7 @@ create an array of one or more trials, like this example from
 
 ``` python
 TRIALS = [
-    Experiment("baseline cropped grayscale no", color_channels=1)
+    Experiment("baseline cropped grayscale", color_channels=1)
     .set_pipeline(
         os.path.join(DATA_DIR, "cropped/train/"),
         os.path.join(DATA_DIR, "cropped/valid/"),
@@ -73,7 +114,8 @@ TRIALS = [
     ),
 ]
 ```
-Then add these trials to the experiments dictionary in [](fake_faces/experiments/__init__.py).
+Then add these trials to the experiments dictionary in
+[fake_faces/experiments/__init__.py](fake_faces/experiments/__init__.py).
 
 Run experiments from the command line with `fake-faces exp`
 (if you've installed fake-faces as a package) or
@@ -83,6 +125,40 @@ the experiment you wish to run from a menu and enter a number of epochs.
 Experiment results will be logged to a folder in [experiments/](experiments/) including a CSV
 file of epoch training and validation scores for plotting learning curves, saved
 model .hdf5 files for resuming training and inference, and TensorBoard logs.
+
+## Fairness Assessment
+
+We utilize the [FairFace dataset](https://github.com/joojs/fairface) (follow links to download
+from Google Drive) and the [Pixel2Style2Pixel](https://github.com/eladrich/pixel2style2pixel)
+project (as a git submodule in [pixel2style2pixel/](pixel2style2pixel/).
+
+### Aligning input images
+
+First, we need to align and crop the input FairFace images. The `fake-faces` application
+includes a command to do this, e.g.:
+
+``` shell
+fake-faces align-all /path/to/fairface/train /path/to/fairface/aligned/train/real --num_threads 4
+fake-faces align-all /path/to/fairface/val /path/to/fairface/aligned/val/real --num_threads 4
+```
+
+This process uses the pretrained model `shape_predictor_68_face_landmarks.dat`
+(about 99.7 MB, stored in Git LFS).
+
+Many of the FairFace face images are not front-facing, so the model will fail to crop
+them and omit them from the batch.
+
+### Generating fake FairFace images
+
+We use the pixel2style2pixel pretrained model `psp_ffhq_encode.pt` (about 1.2GB, stored in Git LFS)
+to convert the FairFace images to fake versions for scoring.
+
+The `fake-faces` cli includes a `falsify` command to run this process on a folder, e.g.:
+
+``` shell
+fake-faces falsify psp_ffhq_encode.pt /path/to/fairface/aligned/train/real /path/to/fairface/aligned/train/fake
+fake-faces falsify psp_ffhq_encode.pt /path/to/fairface/aligned/val/real /path/to/fairface/aligned/val/fake
+```
 
 ## Testing
 

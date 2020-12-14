@@ -32,6 +32,7 @@ from fake_faces.models import MODELS
 from fake_faces.experiments import EXPERIMENTS
 import questionary
 
+
 def check_gpu():
     logger = logging.getLogger(__name__)
     gpus = tf.config.experimental.list_physical_devices("GPU")
@@ -75,9 +76,16 @@ def train(model_name, train_path, valid_path, epochs, rgb):
     colors = 3 if rgb else 1
     train_model(model_name, train_path, valid_path, epochs, colors)
 
+
 @click.command()
 def exp():
     """Run the experiment EXP_NAME for # EPOCHS"""
-    exp_name = questionary.rawselect("Which experiment would you like to run?", list(EXPERIMENTS.keys())).ask()
-    epochs = click.prompt('How many epochs would you like to run it for?', type=int)
-    EXPERIMENTS[exp_name].run(epochs)
+    exp_name = questionary.rawselect(
+        "Which experiment would you like to run?", list(EXPERIMENTS.keys())
+    ).ask()
+    exp = EXPERIMENTS[exp_name]
+    click.echo(f"This experiment has been run for {exp.initial_epoch} epochs so far.")
+    epochs = click.prompt(
+        "How many total epochs would you like to run it for?", type=int
+    )
+    exp.run(epochs)
