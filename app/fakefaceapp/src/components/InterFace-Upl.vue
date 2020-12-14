@@ -1,9 +1,9 @@
 <template>
     <div>
         <form class="form-signin" v-on:submit.prevent="onSubmit">
-          <h1>Or upload your file here:</h1>
+          <h1>Upload your file here:</h1>
           <div class="form-group">
-            <input type="file" name="image" @change="onFileSelected" />
+            <input type="file" name="image" @change="onFileSelected"/>
           </div>
           <div class="form-group" v-if="!results && !waiting">
             <input type="submit" class="btn btn-primary" value="submit">
@@ -11,7 +11,7 @@
           <div v-if="waiting">
             <i class="fa fa-circle-o-notch fa-spin fa-3x fa-fw"></i>
           </div>
-          <img :src="url" v-if="url" style="max-width: 100%;" />
+          <img :src="url2" v-if="url2" style="max-width: 100%;" />
           <div v-if="results" :style="resStyle">
             <h1>{{results}}</h1>
           </div>
@@ -23,12 +23,13 @@
   <script>
       import superagent from 'superagent'
       // TODO: Updated apiBaseUrl
-      var apiBaseUrl = 'http://localhost:7071'
+      // var apiBaseUrl = 'http://localhost:7071'
+      var apiBaseUrl = 'https://ffdetector.azurewebsites.net/'
   
       export default {
           data: function() {
               return {
-                  url: '',
+                  url2: '',
                   results: null,
                   waiting: false,
                   resStyle: 'color: black;',
@@ -37,43 +38,12 @@
           },
           methods: {
               onSubmit() {
-                // this.waiting = true;
-
-                // const reader = new FileReader();
+                this.waiting = true;
                 var fd = new FormData();
                 fd.append('img', this.selectedFile)
 
-                // var request = new XMLHttpRequest();
-                // var addr = apiBaseUrl + '/api/classify';
-
-                // request.open("POST", addr);
-                // request.send(fd);
-
-                // if (this.selectedFile) {
-                //   reader.readAsDataURL(this.selectedFile);
-                // }
-
-                // reader.onload = e => {
-                //   this.url = e.target.result;
-                // }
-
-                
-                // // superagent
-                // // .get(apiBaseUrl + '/api/classify')
-                // // .query({ img: this.url })
-                // // .end(function (err, res) {
-                // // this.waiting = false;
-                // // if (err) {
-                // //     this.results = null;
-                // //     alert("An error has occurred");
-                // // } else {
-                // //     res.body["result"] == "Not a fake" ? this.resStyle = 'color: green' : this.resStyle = 'color: red';
-                // //     this.results = res.body["result"];
-                // // }
-                // // }.bind(this));
-
                 superagent
-                    .post(apiBaseUrl + '/api/classify')
+                    .post(apiBaseUrl + 'api/classify')
                     .accept('application/json')
                     .send(fd)
                     .end(function (err, res) {
@@ -89,10 +59,12 @@
               },
               onFileSelected(event) {
                 this.selectedFile = event.target.files[0]
+                this.results = null;
+                this.url2 = URL.createObjectURL(this.selectedFile);
               },
           },
           watch: {
-              url: function () {
+              url2: function () {
               this.results = null;
               }
           }
