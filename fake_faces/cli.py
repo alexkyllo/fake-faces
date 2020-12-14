@@ -11,7 +11,7 @@ from fake_faces.processing import cropface, align_all, falsify
 from fake_faces.training import train, exp
 from fake_faces.labeling import label
 from fake_faces.testing import make_metrics, make_fairness_metrics, learning_curves
-
+from fake_faces.predicting import predict
 
 @click.group()
 def cli():
@@ -31,6 +31,7 @@ def main():
     cli.add_command(make_metrics)
     cli.add_command(make_fairness_metrics)
     cli.add_command(learning_curves)
+    cli.add_command(predict)
     cli()
 
 
