@@ -21,11 +21,11 @@ def predict(model_path, image_path, rgb):
     """Use MODEL_PATH to predict on IMAGE_PATH."""
     color_mode = "rgb" if rgb else "grayscale"
     model = load_model(model_path)
-    prediction = np.round(predict_image(model, image_path, color_mode) * 100, 3)
-    if prediction > 50:
+    prediction = np.round(predict_image(model, image_path, color_mode), 2)
+    if prediction >= 0.5:
         result = "REAL"
-        conf = prediction
+        conf = prediction * 100
     else:
         result = "FAKE"
-        conf = 100.0 - prediction
+        conf = (1 - prediction) * 100
     click.echo(f"The model predicts this image is {result} with {conf}% confidence")
