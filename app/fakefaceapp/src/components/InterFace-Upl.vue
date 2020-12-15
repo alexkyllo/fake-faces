@@ -23,8 +23,8 @@
   <script>
       import superagent from 'superagent'
       // TODO: Updated apiBaseUrl
-      // var apiBaseUrl = 'http://localhost:7071'
-      var apiBaseUrl = 'https://ffdetector.azurewebsites.net/'
+      var apiBaseUrl = 'http://localhost:7071/'
+      // var apiBaseUrl = 'https://ffdetector.azurewebsites.net/'
   
       export default {
           data: function() {
