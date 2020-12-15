@@ -1,4 +1,4 @@
-"""Baseine model experiments"""
+"""VGG-10 model experiments."""
 import os
 from fake_faces.experiments.experiment import Experiment
 from fake_faces.models import VGG10
