@@ -4,8 +4,12 @@
     <InterFaceFile v-if="selectedOpt=='Upload'"/>
     <InterFaceAPI v-if="selectedOpt=='URL'"/>
     <div id="radiobox">
-      <input type = "radio" name = "rad" id="Upload" value = "Upload" v-model="selectedOpt"><label for="Upload">Upload</label><br>
-      <input type = "radio" name = "rad" id="Upload" value = "URL" v-model="selectedOpt"><label for="URL">URL</label>
+      <div>
+        <input type = "radio" name = "rad" id="Upload" value = "Upload" v-model="selectedOpt"><label for="Upload">Upload</label>
+      </div>
+      <div>
+        <input type = "radio" name = "rad" id="Upload" value = "URL" v-model="selectedOpt"><label for="URL">URL</label>
+      </div>
     </div>
   </div>
 </template>
@@ -32,18 +36,21 @@ export default {
 
 <style>
 #app {
-  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-flow: column;
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
   margin-top: 60px;
-  width: 40%;
-  margin: auto;
+
 }
 #radiobox {
   text-align: left;
+  width: 500px;
 }
 
 #Upload {
@@ -52,6 +59,7 @@ export default {
 
 .cover {
   padding: 30px 0px 30px 0px;
-  width: 100%;
+  max-width: 500px;
+  margin: auto;
 }
 </style>
