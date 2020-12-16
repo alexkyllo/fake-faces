@@ -14,13 +14,14 @@ VALID_PATH=$(FAKE_FACES_DIR)/real-vs-fake/valid
 #################################################################################
 
 ## Compile the project report PDF
-report: report.pdf
+report: FightingFakesFairly.pdf
 
-report.pdf: report.tex report.bib
+FightingFakesFairly.pdf: report.tex report.bib
 	pdflatex -interaction=nonstopmode $<
 	bibtex report.aux
 	pdflatex -interaction=nonstopmode $<
 	pdflatex -interaction=nonstopmode $<
+	mv report.pdf FightingFakesFairly.pdf
 
 ## align images
 align:
